@@ -1,0 +1,96 @@
+/* Wybór poziomu i obrazków (pickers.ts). */
+
+.mg-levels {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--mg-touch-min), 1fr));
+  gap: var(--mg-touch-gap);
+}
+
+.mg-level {
+  position: relative;
+  height: var(--mg-touch-min);
+  border: none;
+  border-radius: var(--mg-radius);
+  background: var(--mg-bg);
+  color: var(--mg-ink);
+  cursor: pointer;
+  box-shadow: var(--mg-shadow-soft);
+  touch-action: manipulation;
+}
+
+.mg-level__num {
+  font-family: var(--mg-font-letter-print);
+  font-size: var(--mg-font-size-l);
+  font-weight: var(--mg-font-weight-bold);
+}
+
+/*
+ * Bieżący poziom/obrazek: zielone tło + grube podkreślenie (Z-15: nie tylko kolor).
+ * Bez ramki — ramka należy wyłącznie do fokusu klawiatury (base.css), żeby nie było dwóch obwódek.
+ */
+.mg-level--current,
+.mg-skin--current {
+  background: var(--mg-sage-light);
+}
+
+.mg-level--current .mg-level__num,
+.mg-skin--current .mg-skin__title {
+  text-decoration: underline;
+  text-decoration-thickness: 4px;
+  text-underline-offset: 6px;
+}
+
+.mg-level__done {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 24px;
+  height: 24px;
+}
+
+.mg-level__hard {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  transform: rotate(45deg);
+  background: var(--mg-chestnut);
+}
+
+.mg-skins {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--mg-touch-gap);
+}
+
+.mg-skin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mg-space-s);
+  width: 140px;
+  padding: var(--mg-space);
+  border: none;
+  border-radius: var(--mg-radius-l);
+  background: var(--mg-bg);
+  color: var(--mg-ink);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.mg-skin__icon {
+  width: 80px;
+  height: 80px;
+}
+
+.mg-skin__icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.mg-skin__title {
+  font-weight: var(--mg-font-weight-bold);
+}

@@ -1,0 +1,177 @@
+/*
+ * „Liczymy orzeszki” — style tylko tej gry (prefiks .g-orzeszki). Kolory, czasy i promienie wyłącznie z tokenów.
+ * Rozmiary w jednostkach kontenera (cqw/cqh) z progiem (Z-33); układ szeroki przez @container (Z-34).
+ * Polana ma stałe proporcje 5 : 3 (siatka pól w logic.ts), więc jej szerokość wynika z dostępnej szerokości i wysokości.
+ * Na telefonie w pionie z klawiaturą 0–9 scena ma 280–310 px wysokości (rdzeń: klawiatura 5 × 2 klawisze 64 px)
+ * albo 292 px (375 × 812, klawisze 80 px): polana + rząd odpowiedzi muszą się zmieścić.
+ */
+
+.g-orzeszki-scene {
+  /* Klawisz-podpowiedź rdzenia siedzi z prawej strony pola odpowiedzi (60 px — .mg-hint__key w core/ui + odstęp);
+     tylko w trybie klawiatury, na dotyku podpowiedź stoi przy klawiszu ekranowym i miejsca nie trzeba. */
+  --g-orzeszki-key: calc(60px + var(--mg-space));
+  /* Miejsce na odpowiedź: dwie kratki („10”) + klawisz-podpowiedź. Stałe, żeby scena nie ruszała się,
+     gdy pole ma raz jedną, raz dwie kratki (Z-02). */
+  --g-orzeszki-answer: calc(2 * var(--mg-touch-min) + var(--mg-touch-gap) + var(--g-orzeszki-key));
+  /* Margines polany od krawędzi sceny (zostawia miejsce na poświatę podpowiedzi, 10 px). */
+  --g-orzeszki-pad: calc(var(--mg-space-s) + var(--mg-space-xs));
+  /* Wiewiórka-przewodnik (U12): 56–120 px — tyle, ile zostaje pod polaną o pełnej szerokości i obok pola
+     odpowiedzi. Liczona tylko z wymiarów sceny, więc stała przez całą rundę (Z-02). */
+  --g-orzeszki-sq: clamp(
+    56px,
+    min(
+      100cqh - 2 * var(--g-orzeszki-pad) - var(--mg-space-s) - min(92cqw, var(--mg-touch-min) * 8) * 3 / 5,
+      100cqw - 2 * var(--g-orzeszki-pad) - var(--g-orzeszki-answer) - var(--mg-space-l)
+    ),
+    120px
+  );
+  /* Układ pionowy: polana nad rzędem [wiewiórka][pole odpowiedzi]. Szerokość polany: z szerokości sceny albo
+     z wysokości, która zostaje po rzędzie odpowiedzi, odstępie i marginesach. */
+  --g-orzeszki-w: max(
+    calc(var(--mg-touch-min) * 2.5),
+    min(
+      92cqw,
+      calc(var(--mg-touch-min) * 8),
+      calc((100cqh - max(var(--mg-touch-min), var(--g-orzeszki-sq)) - var(--mg-space-s) - 2 * var(--g-orzeszki-pad)) * 5 / 3)
+    )
+  );
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--mg-scene-sky);
+}
+
+/* Tryb dotyku: klasa dokładana w game.ts (ctx.input.mode). */
+.g-orzeszki-scene.g-orzeszki-touch {
+  --g-orzeszki-key: 0px;
+}
+
+/* Obiekt pytania: polana + wiewiórka + (dokładane przez rdzeń) pole odpowiedzi.
+   position: relative — rdzeń kotwiczy w nim poświatę; nic nie zależy od liczby dzieci (:last-child). */
+.g-orzeszki-plot {
+  position: relative;
+  /* Poświata 1. błędu przejmuje ten kształt (core/ui). */
+  border-radius: var(--mg-radius-l);
+  display: grid;
+  /* Wiewiórka i pole odpowiedzi tworzą zwartą parę pod polaną; krańcowe kolumny pochłaniają resztę szerokości. */
+  grid-template-columns: 1fr auto var(--g-orzeszki-answer) 1fr;
+  align-items: center;
+  row-gap: var(--mg-space-s);
+}
+
+.g-orzeszki-clearing {
+  position: relative;
+  grid-column: 1 / -1;
+  justify-self: center;
+  width: var(--g-orzeszki-w);
+  aspect-ratio: 5 / 3;
+  border-radius: var(--mg-radius-l);
+  background: var(--mg-scene-grass);
+  box-shadow: var(--mg-shadow-soft);
+}
+
+.g-orzeszki-squirrel {
+  grid-column: 2;
+  grid-row: 2;
+  width: var(--g-orzeszki-sq);
+  height: var(--g-orzeszki-sq);
+  margin-right: var(--mg-space-l);
+}
+
+/* Pole odpowiedzi (rdzeń dokłada je do `plot`): zaczyna się zawsze w tym samym miejscu, drugą kratkę i klawisz-podpowiedź
+   (klawiatura, z prawej strony pola) przyjmuje zarezerwowana kolumna. */
+.g-orzeszki .mg-code {
+  grid-column: 3;
+  grid-row: 2;
+  justify-self: start;
+}
+
+/* Wąska scena (telefon 667 × 375 poziomo: 251 px): wiewiórka + dwie kratki odpowiedzi („10”) = 232 px,
+   więc wiewiórka stoi tuż przy polu (bez odstępu 24 px) — inaczej druga kratka wychodzi poza scenę. */
+@container (max-width: 300px) {
+  .g-orzeszki-squirrel {
+    margin-right: 0;
+  }
+}
+
+/* Szeroka scena (telefon poziomo, komputer): polana po lewej, wiewiórka nad polem odpowiedzi po prawej. */
+@container (min-aspect-ratio: 9/5) {
+  .g-orzeszki-scene {
+    --g-orzeszki-w: max(
+      calc(var(--mg-touch-min) * 2.5),
+      min(
+        100cqw - 2 * var(--mg-space-xl) - var(--g-orzeszki-answer) - var(--mg-space-l),
+        calc((100cqh - 2 * var(--mg-space)) * 5 / 3)
+      )
+    );
+    /* Wiewiórka nad polem odpowiedzi: nie szersza niż kolumna odpowiedzi, razem z polem w wysokości polany. */
+    --g-orzeszki-sq: clamp(
+      56px,
+      min(var(--g-orzeszki-answer), var(--g-orzeszki-w) * 3 / 5 - var(--mg-touch-min) - var(--mg-space-s)),
+      120px
+    );
+  }
+
+  .g-orzeszki-plot {
+    grid-template-columns: auto var(--g-orzeszki-answer);
+    column-gap: var(--mg-space-l);
+  }
+
+  .g-orzeszki-clearing {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+  }
+
+  .g-orzeszki-squirrel {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: end;
+    justify-self: start;
+    margin-right: 0;
+  }
+
+  .g-orzeszki .mg-code {
+    grid-column: 2;
+    align-self: start;
+    justify-self: start;
+  }
+}
+
+/* --- Orzeszki i liście: stoją w miejscu (Z-01, Z-13); nowe wchodzą przenikaniem --- */
+.g-orzeszki-item {
+  position: absolute;
+  aspect-ratio: 1;
+}
+
+.g-orzeszki-item svg {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  animation: g-orzeszki-in var(--mg-dur-base) var(--mg-ease) both;
+}
+
+@keyframes g-orzeszki-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Reakcja na dobrą odpowiedź (Z-20): pod orzeszkami po kolei zapala się jasna poświata — jakby policzone. */
+.g-orzeszki-nut::before {
+  content: '';
+  position: absolute;
+  inset: -14%;
+  border-radius: var(--mg-radius-round);
+  background: var(--mg-sage-light);
+  opacity: 0;
+}
+
+.g-orzeszki-nut.g-orzeszki-counted::before {
+  animation: g-orzeszki-in var(--mg-dur-base) var(--mg-ease) var(--g-orzeszki-delay) both;
+}

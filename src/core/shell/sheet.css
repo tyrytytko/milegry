@@ -1,0 +1,91 @@
+/* Okna (sheet): tło, panel, tytuł, zamknięcie i animacje wspólne. */
+
+.mg-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: var(--mg-edge-safe) var(--mg-space);
+  background: var(--mg-backdrop);
+  animation: mg-fade-in var(--mg-dur-base) var(--mg-ease) both;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.mg-sheet--closing {
+  animation: mg-fade-out var(--mg-dur-fast) var(--mg-ease) both;
+  pointer-events: none;
+}
+
+.mg-sheet__panel {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  max-height: calc(100dvh - 2 * var(--mg-edge-safe));
+  overflow: auto;
+  padding: var(--mg-space-l);
+  border-radius: var(--mg-radius-l);
+  background: var(--mg-surface);
+  box-shadow: var(--mg-shadow-soft);
+  animation: mg-fade-in var(--mg-dur-slow) var(--mg-ease) both;
+}
+
+.mg-sheet__title {
+  font-size: var(--mg-font-size-xl);
+  text-align: center;
+  margin: 0 0 var(--mg-space-l);
+}
+
+/* Okno z przyciskiem zamknięcia: treść zaczyna się poniżej niego z odstępem (Z-33). */
+.mg-sheet__close + .mg-sheet__title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--mg-touch-min);
+  margin: 0 var(--mg-touch-min) var(--mg-touch-gap);
+}
+
+/* Telefon: tytuł w jednej linii mimo marginesu na przycisk zamknięcia (U8). */
+@media (max-width: 480px) {
+  .mg-sheet__title {
+    font-size: var(--mg-font-size-l);
+  }
+  .mg-sheet__close + .mg-sheet__title {
+    margin-left: 0;
+  }
+}
+
+.mg-sheet__close {
+  position: absolute;
+  top: var(--mg-space-s);
+  right: var(--mg-space-s);
+  padding: 0;
+}
+
+@media (max-width: 420px) {
+  .mg-sheet__panel {
+    padding: var(--mg-space);
+  }
+}
+
+/* Niska ekranowa wysokość (telefon poziomo): panel mieści się między pasami bezpiecznymi. */
+@media (max-height: 480px) {
+  .mg-sheet__panel {
+    padding: var(--mg-space);
+  }
+}
+
+/* ===================== Animacje wspólne ===================== */
+
+@keyframes mg-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes mg-fade-out {
+  to {
+    opacity: 0;
+  }
+}

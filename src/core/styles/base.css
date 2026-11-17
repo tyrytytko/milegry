@@ -1,0 +1,179 @@
+/* Style bazowe: reset, typografia, przyciski, zaznaczenie, litery. Kolory wyłącznie z tokens.css. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background: var(--mg-bg);
+  color: var(--mg-ink);
+  font-family: var(--mg-font-ui);
+  font-size: var(--mg-font-size);
+  font-weight: var(--mg-font-weight);
+  line-height: 1.45;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  font-synthesis: none;
+}
+
+body {
+  overscroll-behavior: none;
+  touch-action: manipulation;
+}
+
+#app {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: var(--mg-font-weight-bold);
+  line-height: 1.2;
+}
+
+p {
+  margin: 0;
+}
+
+svg {
+  display: block;
+}
+
+/* Atrybut hidden ma wygrywać z display ustawionym przez klasy (kontrolki, przyciski). */
+[hidden] {
+  display: none !important;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: var(--mg-moss-dark);
+}
+
+/* --- Przyciski --- */
+.mg-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mg-space-s);
+  min-width: var(--mg-frame-btn);
+  min-height: var(--mg-frame-btn);
+  padding: var(--mg-space-s) var(--mg-space-l);
+  border: none;
+  border-radius: var(--mg-radius-round);
+  background: var(--mg-surface);
+  color: var(--mg-ink);
+  font-size: var(--mg-font-size);
+  font-weight: var(--mg-font-weight-bold);
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: var(--mg-shadow-soft);
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  transition:
+    transform var(--mg-dur-fast) var(--mg-ease),
+    box-shadow var(--mg-dur-fast) var(--mg-ease),
+    background-color var(--mg-dur-fast) var(--mg-ease);
+}
+
+.mg-btn:active,
+.mg-btn.mg-pressed {
+  transform: translateY(2px);
+  box-shadow: var(--mg-shadow-pressed);
+}
+
+.mg-btn--primary {
+  background: var(--mg-moss-dark);
+  color: var(--mg-on-dark);
+}
+
+.mg-btn--quiet {
+  background: transparent;
+  box-shadow: none;
+}
+
+.mg-btn[aria-pressed='true'] {
+  background: var(--mg-moss-dark);
+  color: var(--mg-on-dark);
+}
+
+.mg-btn svg {
+  width: 32px;
+  height: 32px;
+  flex: none;
+}
+
+/* --- Zaznaczenie --- */
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: var(--mg-focus-width) solid var(--mg-focus-color);
+  outline-offset: 3px;
+}
+
+/* Obrys fokusu tylko po nawigacji klawiaturą (lastInput w inputHub.ts): po tapnięciu/kliknięciu, a także
+   po samym klawiszu litery czy cyfry, żaden obrys nie zostaje (także po fokusie ustawionym przez skrypt). */
+:root:not([data-last-input='keyboard']) :focus-visible {
+  outline: none;
+}
+
+/* Ramka-wyróżnienie z ui.focusGrid (Z-32) — widoczna tylko po nawigacji klawiaturą. */
+[data-last-input='keyboard'] .mg-focused {
+  outline: var(--mg-focus-width) solid var(--mg-focus-color);
+  outline-offset: 4px;
+}
+
+.mg-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.mg-art {
+  overflow: visible;
+}
+
+/* --- Litery „do nauki” (ctx.ui.letter) — gry nigdy nie ustawiają własnego kroju (Z-35) --- */
+.mg-letter {
+  display: inline-block;
+  font-family: var(--mg-font-letter-print);
+  font-weight: var(--mg-font-weight);
+  font-synthesis: none;
+  line-height: 1;
+  color: var(--mg-ink);
+}
+
+.mg-letter[data-script='cursive'] {
+  font-family: var(--mg-font-letter-cursive);
+  font-weight: 400;
+  font-size: calc(1em * var(--mg-letter-cursive-scale));
+  line-height: var(--mg-letter-cursive-leading);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,351 @@
+/*
+ * „Każdemu po jednym” — style tylko tej gry (prefiks .g-po-jednym). Kolory, czasy i promienie wyłącznie z tokenów.
+ * Rozmiary w jednostkach kontenera (cqw/cqh) z progiem --mg-touch-min (Z-33); układ poziomy przez @container (Z-34).
+ * Wszystkie jabłka mają ten sam kolor, a liczebność nigdy nie wynika z wielkości tacki — tacki są jednakowe (Z-15).
+ */
+
+.g-po-jednym-scene {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mg-touch-gap);
+  padding: var(--mg-space) var(--mg-space) var(--mg-edge-safe); /* nic klikalnego przy dolnej krawędzi (Z-33) */
+  background: var(--mg-scene-sky);
+}
+
+/* --- Jabłko (apple.ts): części bez własnych kolorów, kolor z tokenów --- */
+.g-po-jednym-apple {
+  display: block;
+  aspect-ratio: 1;
+}
+
+.g-po-jednym-apple svg,
+.g-po-jednym-hog svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.g-po-jednym-apple-body {
+  fill: color-mix(in srgb, var(--mg-rosehip) 80%, var(--mg-honey));
+}
+
+.g-po-jednym-apple-stem {
+  fill: none;
+  stroke: var(--mg-art-trunk);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.g-po-jednym-apple-leaf {
+  fill: var(--mg-moss);
+}
+
+.g-po-jednym-apple-shine {
+  fill: var(--mg-art-highlight);
+  opacity: 0.5;
+}
+
+@keyframes g-po-jednym-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* =========================================================================
+ * Rozdawanie: koszyk u góry, jeżyki przy stoliku pod nim
+ * ========================================================================= */
+.g-po-jednym-deal {
+  /* Bok miejsca jeżyka (cel dotykowy). W pionie po 3 w rzędzie (4 = 2 × 2): trzy miejsca + dwa odstępy mieszczą się
+     w szerokości sceny bez jej marginesów. */
+  --g-po-jednym-seat: max(
+    var(--mg-touch-min),
+    min(calc((100cqw - 2 * var(--mg-space) - 2 * var(--mg-touch-gap)) / 3), 22cqh)
+  );
+  /* Bok jabłka w koszyku. --g-po-jednym-apples (deal.ts) = najwięcej jabłek przy stoliku w tej rundzie; tyle jabłek
+     z odstępami i marginesami koszyka musi zmieścić się w szerokości sceny (6 jabłek na 360 × 640 → ok. 37 px). */
+  --g-po-jednym-apple: min(
+    max(40px, calc(var(--g-po-jednym-seat) * 0.42)),
+    calc(
+      (100cqw - 4 * var(--mg-space) - (var(--g-po-jednym-apples, 3) - 1) * var(--mg-space-s)) /
+        var(--g-po-jednym-apples, 3)
+    )
+  );
+  gap: max(var(--mg-space-l), 5cqh);
+}
+
+/* Z-02: szerokość koszyka stała przez całą rundę — liczona z największej liczby jabłek w rundzie, a nie z jabłek
+   przy bieżącym stoliku. Jabłka stoją pośrodku; przy mniejszym stoliku po bokach zostaje pusty brzeg koszyka. */
+.g-po-jednym-basket {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mg-space-s);
+  width: max(
+    calc(var(--g-po-jednym-seat) * 2),
+    calc(
+      var(--g-po-jednym-apples, 3) * var(--g-po-jednym-apple) + (var(--g-po-jednym-apples, 3) - 1) *
+        var(--mg-space-s) + 2 * var(--mg-space)
+    )
+  );
+  padding: var(--mg-space-s) var(--mg-space);
+  border-radius: var(--mg-radius) var(--mg-radius) var(--mg-radius-l) var(--mg-radius-l);
+  background: var(--mg-scene-forest-floor);
+  box-shadow: var(--mg-shadow-soft);
+}
+
+.g-po-jednym-basket .g-po-jednym-apple {
+  flex: none;
+  width: var(--g-po-jednym-apple);
+  transition: opacity var(--mg-dur-fast) var(--mg-ease);
+}
+
+/* Przenikanie nowych jabłek na SVG: `animation … both` na samym jabłku przykryłaby opacity: 0 zabranego jabłka. */
+.g-po-jednym-basket .g-po-jednym-apple svg {
+  animation: g-po-jednym-in var(--mg-dur-base) var(--mg-ease) both;
+}
+
+/* Jabłko, które już poleciało do jeżyka: miejsce w koszyku zostaje (koszyk się nie przesuwa — Z-02). */
+.g-po-jednym-basket .g-po-jednym-apple.g-po-jednym-taken {
+  opacity: 0;
+}
+
+.g-po-jednym-seats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--mg-touch-gap);
+  max-width: calc(3 * var(--g-po-jednym-seat) + 2 * var(--mg-touch-gap));
+}
+
+.g-po-jednym-seats[data-count='4'] {
+  max-width: calc(2 * var(--g-po-jednym-seat) + var(--mg-touch-gap));
+}
+
+/* Z-02: gdy w rundzie bywa więcej niż 3 jeżyki (dwa rzędy w pionie), stolik zawsze zajmuje wysokość dwóch rzędów —
+   przy stoliku z jednym rzędem koszyk nie przeskakuje w dół. Rząd jeżyków stoi wtedy tuż pod koszykiem. */
+.g-po-jednym-seats[data-max='4'],
+.g-po-jednym-seats[data-max='5'] {
+  align-content: flex-start;
+  min-height: calc(2 * var(--g-po-jednym-seat) + var(--mg-touch-gap));
+}
+
+/* Miejsce jeżyka (element wyboru): position: relative — rdzeń kotwiczy przy nim podpowiedzi. */
+.g-po-jednym-seat {
+  position: relative;
+  width: var(--g-po-jednym-seat);
+  height: var(--g-po-jednym-seat);
+  padding: 0;
+  border: 3px solid var(--mg-sand);
+  border-radius: var(--mg-radius);
+  background: var(--mg-surface);
+  box-shadow: var(--mg-shadow-soft);
+  cursor: pointer;
+  transition: background-color var(--mg-dur-base) var(--mg-ease);
+}
+
+.g-po-jednym-seat .g-po-jednym-hog {
+  position: absolute;
+  left: 2%;
+  top: 4%;
+  width: 74%;
+  height: 74%;
+  animation: g-po-jednym-in var(--mg-dur-base) var(--mg-ease) both;
+}
+
+/* Talerzyk przed noskiem jeżyka — tu ląduje jabłko. */
+.g-po-jednym-plate {
+  position: absolute;
+  right: 3%;
+  bottom: 4%;
+  width: 48%;
+  height: 48%;
+}
+
+.g-po-jednym-plate::before {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 30%;
+  border: 3px solid var(--mg-chestnut); /* kształt talerzyka ≈ 4,9:1 na kartce — widać „miejsce na jabłko” (U9) */
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--mg-sand) 75%, var(--mg-chestnut));
+}
+
+.g-po-jednym-plate .g-po-jednym-apple {
+  position: absolute;
+  left: 8%;
+  bottom: 8%;
+  width: 84%;
+}
+
+/* Jeżyk z jabłkiem: jasne tło „dobrze” — a przede wszystkim jabłko na talerzyku (nie tylko kolor, Z-15). */
+.g-po-jednym-seat.g-po-jednym-fed {
+  background: var(--mg-sage-light);
+  border-color: var(--mg-moss);
+}
+
+/* Lot jabłka z koszyka na talerzyk (jeden ruchomy obiekt, Z-01). Start: zmienne ustawione w deal.ts. */
+.g-po-jednym-apple.g-po-jednym-served {
+  transform-origin: 0 0;
+  animation: g-po-jednym-fly var(--mg-dur-base) var(--mg-ease) both;
+}
+
+@keyframes g-po-jednym-fly {
+  from {
+    translate: var(--g-po-jednym-dx, 0) var(--g-po-jednym-dy, 0);
+    scale: var(--g-po-jednym-s, 1);
+  }
+  to {
+    translate: 0 0;
+    scale: 1;
+  }
+}
+
+/* Z-05: zamiast lotu jabłko pojawia się na talerzyku przenikaniem. */
+@media (prefers-reduced-motion: reduce) {
+  .g-po-jednym-apple.g-po-jednym-served {
+    animation-name: g-po-jednym-in;
+  }
+}
+
+/* =========================================================================
+ * Wybór tacki: pytanie (rząd jeżyków albo cyfra) i tacki 5 : 2 z jabłkami
+ * ========================================================================= */
+.g-po-jednym-choose {
+  /* Szerokość tacki (= szerokość kafelka pytania). W pionie: pytanie 0,26 W + 3 tacki po 0,4 W + odstępy. */
+  --g-po-jednym-w: max(
+    calc(var(--mg-touch-min) * 2.5),
+    min(92cqw, calc((100cqh - var(--mg-edge-safe) - 2 * var(--mg-space) - 3 * var(--mg-touch-gap)) / 1.46))
+  );
+}
+
+.g-po-jednym-question {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--g-po-jednym-w);
+  height: calc(var(--g-po-jednym-w) * 0.26);
+  border-radius: var(--mg-radius); /* poświata 1. błędu przejmuje to zaokrąglenie */
+  background: var(--mg-surface);
+  box-shadow: var(--mg-shadow-soft);
+}
+
+/* Jeżyk w pytaniu: tyle szerokości, ile pole tacki — rząd jeżyków stoi „nad” polami tacki. */
+.g-po-jednym-qhog {
+  position: relative;
+  width: calc(var(--g-po-jednym-w) / 5);
+  aspect-ratio: 1;
+}
+
+.g-po-jednym-qhog .g-po-jednym-hog {
+  position: absolute;
+  inset: 0 12% 12% 0;
+  animation: g-po-jednym-in var(--mg-dur-base) var(--mg-ease) both;
+}
+
+/* Po rozwiązaniu każdy jeżyk dostaje jabłko (para 1:1, Z-20). */
+.g-po-jednym-qhog .g-po-jednym-apple {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 42%;
+  opacity: 0;
+  transition: opacity var(--mg-dur-base) var(--mg-ease);
+}
+
+.g-po-jednym-qhog.g-po-jednym-fed .g-po-jednym-apple {
+  opacity: 1;
+}
+
+.g-po-jednym-digit {
+  color: var(--mg-ink);
+  font-size: calc(var(--g-po-jednym-w) * 0.22);
+  font-weight: var(--mg-font-weight-bold);
+  line-height: 1;
+  animation: g-po-jednym-in var(--mg-dur-base) var(--mg-ease) both;
+}
+
+.g-po-jednym-trays {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mg-touch-gap);
+}
+
+/* Tacka (element wyboru): jednakowa dla każdej liczby jabłek. position: relative — jabłka i podpowiedzi. */
+.g-po-jednym-tray {
+  position: relative;
+  width: var(--g-po-jednym-w);
+  height: calc(var(--g-po-jednym-w) * 0.4);
+  padding: 0;
+  border: 3px solid var(--mg-sand);
+  border-radius: var(--mg-radius);
+  background: color-mix(in srgb, var(--mg-sand) 40%, var(--mg-surface));
+  box-shadow: var(--mg-shadow-soft);
+  cursor: pointer;
+  transition: background-color var(--mg-dur-base) var(--mg-ease);
+}
+
+.g-po-jednym-tray .g-po-jednym-apple {
+  position: absolute;
+  transform: translate(-50%, -50%);
+}
+
+/* Animacja na SVG, nie na tacce: `animation` na tacce przykryłaby kołysanie z rdzenia. */
+.g-po-jednym-tray .g-po-jednym-apple svg {
+  animation: g-po-jednym-in var(--mg-dur-base) var(--mg-ease) both;
+}
+
+.g-po-jednym-tray.g-po-jednym-solved {
+  background: var(--mg-sage-light);
+  border-color: var(--mg-moss);
+}
+
+/* Poziomo (Z-34): siatka 2 × 2 — pytanie w lewym górnym polu, tacki w pozostałych (kolumna trzech tacek nie mieści
+   się w niskiej scenie: telefon 667 × 375 ma scenę 635 × 263 px). W rozdawaniu jeżyki w jednym rzędzie. */
+@container (min-aspect-ratio: 1/1) {
+  .g-po-jednym-choose {
+    --g-po-jednym-w: max(
+      calc(var(--mg-touch-min) * 2.5),
+      min(
+        calc((92cqw - var(--mg-touch-gap)) / 2),
+        calc((100cqh - var(--mg-edge-safe) - var(--mg-space) - var(--mg-touch-gap)) / 0.8)
+      )
+    );
+    display: grid;
+    grid-template-columns: repeat(2, var(--g-po-jednym-w));
+    grid-auto-rows: calc(var(--g-po-jednym-w) * 0.4);
+    place-content: center;
+  }
+
+  /* Tacki stają się polami siatki sceny (pojemnik nie tworzy własnego pudełka). */
+  .g-po-jednym-trays {
+    display: contents;
+  }
+
+  .g-po-jednym-choose .g-po-jednym-question {
+    height: calc(var(--g-po-jednym-w) * 0.4);
+  }
+
+  .g-po-jednym-deal {
+    --g-po-jednym-seat: max(var(--mg-touch-min), min(15cqw, 30cqh));
+  }
+
+  .g-po-jednym-seats,
+  .g-po-jednym-seats[data-count='4'] {
+    max-width: none;
+  }
+
+  .g-po-jednym-seats[data-max='4'],
+  .g-po-jednym-seats[data-max='5'] {
+    min-height: 0;
+  }
+}

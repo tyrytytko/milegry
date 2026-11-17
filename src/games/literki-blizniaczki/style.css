@@ -1,0 +1,296 @@
+/*
+ * „Literki bliźniaczki” — style tylko tej gry (prefiks .g-literki-blizniaczki). Kolory, czasy i promienie
+ * wyłącznie z tokenów. Rozmiary w jednostkach kontenera (cqw/cqh) z progiem --mg-touch-min (Z-33);
+ * układ poziomy przez @container (Z-34). Litery rysuje ctx.ui.letter — tu tylko ich rozmiar (font-size rodzica).
+ * Krój pisany ma cienką kreskę, więc litery są duże: wzór ma wersalik ≥ ~96 px na telefonie (Z-14, Z-35).
+ */
+
+.g-literki-blizniaczki-scene {
+  /* --p: wysokość wersalika litery-wzoru (Z-35: na telefonie ≥ ~96 px); --a: szerokość żołędzia (wysokość = 1,2 ×). */
+  --p: max(80px, min(28cqw, 14cqh));
+  --a: max(var(--mg-touch-min), min(29.5cqw, 15cqh));
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: max(var(--mg-space-l), 5cqh);
+  padding-bottom: var(--mg-edge-safe); /* nic klikalnego przy dolnej krawędzi (Z-33) */
+  background: var(--mg-scene-sky);
+}
+
+/* --- Wiewiórka trzyma liść ze wzorem --- */
+.g-literki-blizniaczki-stage {
+  display: flex;
+  align-items: flex-end;
+}
+
+.g-literki-blizniaczki-squirrel {
+  flex: none;
+  position: relative;
+  z-index: 1; /* łapki na brzegu liścia */
+  width: var(--p);
+  height: var(--p);
+  margin-right: calc(var(--p) * -0.4);
+}
+
+.g-literki-blizniaczki-squirrel svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Liść = jasny kafelek z zieloną obwódką (litera: --mg-ink na jasnym tle, Z-14). position: relative — tu rdzeń dokłada poświatę. */
+.g-literki-blizniaczki-leaf {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--p) * 0.15);
+  /* Stała szerokość z miejscem na parę liter po trafieniu — liść ani wiewiórka nie przesuwają się. */
+  width: calc(var(--p) * 2.7);
+  /* Wysokość z zapasem na kreski nad literą (Ć, Ż) i pętle pod linią (G, J, Y, g, j, y, f). */
+  height: calc(var(--p) * 2.5);
+  padding: 0 calc(var(--p) * 0.3);
+  border: 5px solid var(--mg-moss);
+  border-radius: 14% 62% 14% 62% / 18% 62% 18% 62%;
+  background: var(--mg-surface);
+  box-shadow: var(--mg-shadow-soft);
+}
+
+/*
+ * Ten sam wersalik w obu krojach: krój pisany ma wersalik ≈ 1,2 em (z rdzeniowym powiększeniem), drukowany ≈ 0,72 em.
+ * --k przelicza wysokość wersalika na font-size miejsca, w które ui.letter wkłada literę (data-script ustawia game.ts).
+ */
+.g-literki-blizniaczki-slot[data-script='cursive'] {
+  --k: 0.83;
+}
+
+.g-literki-blizniaczki-slot[data-script='print'] {
+  --k: 1.39;
+}
+
+/* Małe litery: wyrównujemy wysokość „brzuszka” (x-height): pisane ≈ 0,62 em, drukowane ≈ 0,5 em; trochę większe niż wielkie. */
+.g-literki-blizniaczki-slot[data-script='cursive'][data-case='lower'] {
+  --k: 1;
+}
+
+.g-literki-blizniaczki-slot[data-script='print'][data-case='lower'] {
+  --k: 1.3;
+}
+
+.g-literki-blizniaczki-pattern,
+.g-literki-blizniaczki-twin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding-bottom: calc(var(--p) * 0.17); /* linia pisma wyżej: pętle pod linią potrzebują więcej miejsca niż kreski nad literą */
+  transition: font-size var(--mg-dur-base) var(--mg-ease);
+}
+
+.g-literki-blizniaczki-pattern {
+  font-size: calc(var(--p) * var(--k, 1));
+}
+
+/* Małe litery mają w kroju więcej miejsca nad sobą niż pod linią (pętle g, j, y) — linia jeszcze wyżej. */
+.g-literki-blizniaczki-pattern[data-case='lower'] {
+  padding-bottom: calc(var(--p) * 0.45);
+}
+
+/* Mała bliźniaczka (poziomy z podpowiedzią „stała”): 40% wzoru, w kroju żołędzi. */
+.g-literki-blizniaczki-twin {
+  font-size: calc(var(--p) * var(--k, 1) * 0.4);
+}
+
+.g-literki-blizniaczki-twin:empty {
+  display: none;
+}
+
+/* Trafienie: obie formy obok siebie, w tym samym rozmiarze. */
+.g-literki-blizniaczki-pair .g-literki-blizniaczki-pattern,
+.g-literki-blizniaczki-pair .g-literki-blizniaczki-twin {
+  font-size: calc(var(--p) * var(--k, 1) * 0.7);
+}
+
+/* --- Żołędzie: brązowa czapeczka i jasny orzeszek z literą --- */
+.g-literki-blizniaczki-acorns {
+  --h: 1.2; /* wysokość żołędzia = --h × szerokość */
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: var(--a);
+  grid-auto-rows: calc(var(--a) * var(--h));
+  gap: var(--mg-touch-gap) max(var(--mg-touch-gap), 3cqw);
+}
+
+/* Poziomy z małymi literami na żołędziach: wyższy żołądź na pętle pisanych f, g, j, y (ustawiane raz na poziom, Z-02). */
+.g-literki-blizniaczki-acorns[data-tall] {
+  --h: 1.4;
+}
+
+/* Dwa żołędzie w rzędzie albo cztery 2 × 2 (na telefonie z odstępem ≥ 16 px) mogą być większe niż trzy w rzędzie. */
+.g-literki-blizniaczki-acorns:is([data-count='2'], [data-count='4']) {
+  --a: max(var(--mg-touch-min), min(36cqw, 17cqh));
+}
+
+.g-literki-blizniaczki-acorns[data-count='4'] {
+  grid-auto-flow: row;
+  grid-template-columns: repeat(2, var(--a));
+}
+
+.g-literki-blizniaczki-acorn {
+  position: relative;
+  padding: 0;
+  border: 0;
+  border-radius: var(--mg-radius);
+  background: transparent;
+  cursor: pointer;
+  transition: opacity var(--mg-dur-base) var(--mg-ease);
+}
+
+.g-literki-blizniaczki-cap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 28%;
+  border-radius: 50% 50% 22% 22% / 80% 80% 22% 22%;
+  background: var(--mg-art-chestnut);
+  z-index: 1;
+}
+
+/* Ogonek czapeczki. */
+.g-literki-blizniaczki-cap::before {
+  content: '';
+  position: absolute;
+  left: 46%;
+  top: -14%;
+  width: 8%;
+  height: 26%;
+  border-radius: var(--mg-radius-round);
+  background: var(--mg-art-trunk);
+}
+
+.g-literki-blizniaczki-nut {
+  position: absolute;
+  top: 26%;
+  left: 7%;
+  right: 7%;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Linia pisma nieco wyżej: pętle pod linią (f, g, j, y) potrzebują więcej miejsca niż kreski nad literą. */
+  padding-bottom: calc(var(--a) * 0.1);
+  border: 3px solid var(--mg-sand);
+  border-radius: 40% 40% 50% 50% / 30% 30% 70% 70%;
+  background: var(--mg-surface);
+  box-shadow: var(--mg-shadow-soft);
+  font-size: calc(var(--a) * 0.38 * var(--k, 1));
+  transition: background-color var(--mg-dur-base) var(--mg-ease);
+}
+
+/*
+ * Małe litery na żołędziu (Z-14): „brzuszek” (x-height) ≈ 0,34 × szerokość żołędzia, czyli ≥ 32 px na telefonie
+ * 375 × 812 przy 2, 3 i 4 żołędziach. Zmierzone: drukowana ma brzuszek ≈ 0,49 em, pisana ≈ 0,52 em (po rdzeniowym
+ * powiększeniu 1,2×). To nadpisuje --k tylko na żołędziu — wzór na liściu liczy się po swojemu.
+ */
+.g-literki-blizniaczki-nut[data-script='print'][data-case='lower'] {
+  --k: 1.8;
+}
+
+.g-literki-blizniaczki-nut[data-script='cursive'][data-case='lower'] {
+  --k: 1.32; /* więcej nie wolno: pętle f, g, j, y wychodziłyby poza żołądź lub pod czapeczkę */
+}
+
+/* Małe litery rosną i maleją razem z wysokością żołędzia (--h = 1,4 to wysokość, dla której dobrano --k). */
+.g-literki-blizniaczki-nut[data-case='lower'] {
+  font-size: calc(var(--a) * 0.38 * var(--k, 1) * var(--h) / 1.4);
+}
+
+/* Małe litery: linia pisma niżej niż przy wersalikach (u wersalików poniżej linii nic nie schodzi). */
+.g-literki-blizniaczki-nut[data-case='lower'] {
+  padding-bottom: calc(var(--a) * 0.15);
+}
+
+/* Pisane małe: pętle g, j, y schodzą najniżej — linia pisma odrobinę wyżej niż w drukowanych. */
+.g-literki-blizniaczki-nut[data-script='cursive'][data-case='lower'] {
+  padding-bottom: calc(var(--a) * 0.22);
+}
+
+/* Poprawny żołądź po trafieniu: tło „dobrze”; pozostałe spokojnie przygasają. */
+.g-literki-blizniaczki-solved .g-literki-blizniaczki-nut {
+  background: var(--mg-sage-light);
+  border-color: var(--mg-moss);
+}
+
+.g-literki-blizniaczki-done .g-literki-blizniaczki-acorn:not(.g-literki-blizniaczki-solved) {
+  opacity: 0.35;
+}
+
+/* Nowa treść zadania wchodzi przenikaniem; animacja na literze, nie na żołędziu (kołysanie z rdzenia). */
+.g-literki-blizniaczki-pattern .mg-letter,
+.g-literki-blizniaczki-twin .mg-letter,
+.g-literki-blizniaczki-nut .mg-letter {
+  animation: g-literki-blizniaczki-in var(--mg-dur-base) var(--mg-ease) both;
+}
+
+@keyframes g-literki-blizniaczki-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/*
+ * Poziomo (Z-34): wiewiórka z liściem po lewej, żołędzie po prawej. Szerokość rzędu = wiewiórka + liść (≈ 43 cqw przy
+ * --p = 13 cqw) + odstęp + żołędzie, więc trzy żołędzie mają ≤ 13,5 cqw, a cztery tworzą kwadrat 2 × 2 (rząd czterech
+ * żołędzi po 80 px wychodził poza scenę na telefonie 667 × 375 i na pulpicie). Wysokość kwadratu 2 × 2 uwzględnia pas
+ * --mg-edge-safe pod sceną.
+ */
+@container (min-aspect-ratio: 1/1) {
+  .g-literki-blizniaczki-scene {
+    --p: max(56px, min(13cqw, 30cqh));
+    --a: max(var(--mg-touch-min), min(13.5cqw, 40cqh));
+    flex-direction: row;
+    gap: max(var(--mg-space-xl), 4cqw);
+  }
+
+  .g-literki-blizniaczki-acorns[data-count='2'] {
+    --a: max(var(--mg-touch-min), min(14cqw, 40cqh));
+  }
+
+  .g-literki-blizniaczki-acorns[data-count='4'] {
+    --a: max(var(--mg-touch-min), min(14cqw, calc((100cqh - var(--mg-edge-safe) - 2 * var(--mg-touch-gap)) / (2 * var(--h)))));
+  }
+}
+
+/*
+ * Niska scena (telefon poziomo, ≤ 296 px): kwadrat 2 × 2 z żołędzi 80 px i wysokością 1,4 × nie zmieściłby się nad pasem
+ * --mg-edge-safe (wychodził poza górną krawędź sceny), więc żołądź jest niższy; litery maleją razem z nim (zob. font-size nutu).
+ */
+@container (min-aspect-ratio: 1/1) and (max-height: 296px) {
+  .g-literki-blizniaczki-acorns[data-count='4'][data-tall] {
+    --h: 1.28;
+  }
+}
+
+/* Bardzo szeroka scena (np. telefon 812 × 375): cztery żołędzie mieszczą się w jednym rzędzie i są większe niż w 2 × 2. */
+@container (min-aspect-ratio: 13/5) {
+  .g-literki-blizniaczki-acorns[data-count='4'] {
+    --a: max(var(--mg-touch-min), min(11.5cqw, 40cqh));
+    grid-auto-flow: column;
+    grid-template-columns: none;
+  }
+}
+
+/* Ograniczony ruch (Z-05): bez zmiany rozmiaru liter — tylko przenikanie. */
+@media (prefers-reduced-motion: reduce) {
+  .g-literki-blizniaczki-pattern,
+  .g-literki-blizniaczki-twin {
+    transition: none;
+  }
+}

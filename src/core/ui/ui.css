@@ -1,0 +1,377 @@
+/*
+ * Kontrolki ekranowe i efekty z ctx.ui. Kolory, rozmiary i czasy wyłącznie z tokens.css.
+ * Klasy, które rdzeń dopisuje elementom gry: mg-focused (focusGrid), mg-wobble (wobble).
+ */
+
+/* --- Klawisz kontrolki (≥ 80 px, odstęp ≥ 16 px — Z-33) --- */
+.mg-key {
+  /* relative: podpowiedź (ui.hint) może wskazać klawisz ekranowy (runRound na dotyku). */
+  position: relative;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--mg-touch-min);
+  height: var(--mg-touch-min);
+  padding: 0;
+  border: none;
+  border-radius: var(--mg-radius);
+  background: var(--mg-surface);
+  color: var(--mg-ink);
+  box-shadow: var(--mg-shadow-soft);
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  transition:
+    transform var(--mg-dur-fast) var(--mg-ease),
+    background-color var(--mg-dur-fast) var(--mg-ease),
+    box-shadow var(--mg-dur-fast) var(--mg-ease);
+}
+
+.mg-key svg {
+  width: 40px;
+  height: 40px;
+}
+
+.mg-key.mg-pressed {
+  transform: translateY(2px);
+  background: var(--mg-sage-light);
+  box-shadow: var(--mg-shadow-pressed);
+}
+
+.mg-key--primary {
+  background: var(--mg-moss-dark);
+  color: var(--mg-on-dark);
+}
+
+.mg-key--soft {
+  background: var(--mg-mist);
+}
+
+.mg-key .mg-letter,
+.mg-key__digit {
+  font-family: var(--mg-font-letter-print);
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+/* --- numPad: 3 kolumny × 4 rzędy (jak w telefonie); na niskim ekranie poziomo 4 × 3 (zob. niżej) --- */
+.mg-numpad {
+  display: grid;
+  grid-template-columns: repeat(3, var(--mg-touch-min));
+  gap: var(--mg-touch-gap);
+  justify-content: center;
+}
+
+.mg-numpad__erase {
+  grid-column: 1;
+  grid-row: 4;
+}
+.mg-numpad__zero {
+  grid-column: 2;
+  grid-row: 4;
+}
+.mg-numpad__ok {
+  grid-column: 3;
+  grid-row: 4;
+}
+
+/* --- dPad: krzyż 3 × 3 --- */
+.mg-dpad {
+  display: grid;
+  grid-template-columns: repeat(3, var(--mg-touch-min));
+  grid-template-rows: repeat(3, var(--mg-touch-min));
+  gap: var(--mg-touch-gap);
+}
+
+.mg-dpad__up {
+  grid-area: 1 / 2;
+}
+.mg-dpad__left {
+  grid-area: 2 / 1;
+}
+.mg-dpad__ok {
+  grid-area: 2 / 2;
+}
+.mg-dpad__right {
+  grid-area: 2 / 3;
+}
+.mg-dpad__down {
+  grid-area: 3 / 2;
+}
+
+/* --- letterKeys --- */
+.mg-letterkeys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mg-touch-gap);
+  justify-content: center;
+  max-width: 100%;
+}
+
+/* Niski ekran poziomo (telefon) — ten sam próg co układ pasa kontrolek w shell/frame.css: klawiatura
+   numeryczna w 4 kolumnach × 3 rzędy (kolejność z DOM: … 9 0 ⌫ OK), litery po 3 w rzędzie. */
+@media (min-aspect-ratio: 1/1) and (max-height: 520px) {
+  .mg-numpad {
+    grid-template-columns: repeat(4, var(--mg-touch-min));
+  }
+  .mg-numpad__erase,
+  .mg-numpad__zero,
+  .mg-numpad__ok {
+    grid-column: auto;
+    grid-row: auto;
+  }
+  .mg-letterkeys {
+    max-width: calc(3 * var(--mg-touch-min) + 2 * var(--mg-touch-gap));
+  }
+  /* Wąski ekran w poziomie: szerokość użyteczna (bez bezpiecznych marginesów, kontener mg-frame) poniżej 640 px.
+     Pas z klawiszami 80 px (384 px) zawija pasek gry i zostawia scenie za mało miejsca (poniżej ~633 px pasek
+     się zawija, przy ~635 px treść sceny dotyka krawędzi). Ten sam wyjątek od Z-33 co niżej: klawisze 64 px,
+     odstęp 8 px, nadal 4 kolumny × 3 rzędy. Szerokość pasa w shell/frame.css (ten sam próg). Bez wycięcia
+     najwęższy telefon w poziomie (667 px) jest powyżej progu. dPad i litery się nie zmieniają (mieszczą się). */
+  @container mg-frame (max-width: 639.98px) {
+    .mg-numpad {
+      --mg-touch-min: 64px;
+      --mg-touch-gap: 8px;
+    }
+  }
+}
+
+/* Mały telefon w pionie (np. 360 × 640, 375 × 667): klawiatura 3 × 4 z klawiszami 80 px zabierałaby 408 px
+   i scenie zostawało ~120 px. Świadomy wyjątek od Z-33 (80 px / 16 px), tylko tu, gdzie scena inaczej nie ma
+   miejsca: klawisze 64 px, odstęp 8 px, rzędy po 5 (1–5, 6–0, „cofnij”/OK w trzecim rzędzie, wyśrodkowane).
+   Klawiatura z 10 cyframi rezerwuje wysokość trzech rzędów już w pierwszym zadaniu, żeby pojawienie się „cofnij”
+   (kod dłuższy niż 1 cyfra) nie zmieniało wysokości sceny i nie przesuwało jej treści (Z-02).
+   Próg wysokości: poniżej ~780 px scena przy klawiszach 80 px ma mniej niż ~260 px; 375 × 812 bez wycięcia ma
+   klawisze 80 px, a z wycięciem 47/34 px (miejsce 375 × 731) — zwarte.
+   Poniżej 360 px szerokości (pas 5 klawiszy się nie mieści) działa układ 3 × 4. Wymiary to miejsce w ramce gry
+   bez bezpiecznych marginesów (kontener mg-frame w shell/frame.css, ten sam próg), nie całe okno. */
+@container mg-frame (max-aspect-ratio: 99/100) and (max-height: 760px) and (min-width: 360px) {
+  .mg-numpad {
+    --mg-touch-min: 64px;
+    --mg-touch-gap: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-content: flex-start;
+    width: calc(5 * var(--mg-touch-min) + 4 * var(--mg-touch-gap));
+  }
+  .mg-numpad:has(> .mg-key:nth-child(10)) {
+    min-height: calc(3 * var(--mg-touch-min) + 2 * var(--mg-touch-gap));
+  }
+}
+
+/* --- mg-code: pole odpowiedzi cyframi (core/round, createCodeEntry) — kratka na każdą cyfrę --- */
+/* Kratka ma 80 px (--mg-touch-min), a gdy n kratek z odstępami (0,2 kratki) nie mieści się w szerokości sceny
+   (cqw: root gry jest kontenerem), maleje — nie poniżej 40 px. Zmienne są na roocie gry, żeby gra mogła
+   ustawić w tym samym rozmiarze np. cyfry wzoru nad polem. */
+.mg-game-root:has(.mg-code) {
+  --mg-code-n: 1;
+  --mg-code-slot: clamp(40px, (100cqw - 2 * var(--mg-space)) / (1.2 * var(--mg-code-n) - 0.2), var(--mg-touch-min));
+  --mg-code-gap: calc(var(--mg-code-slot) * 0.2);
+}
+.mg-game-root:has(.mg-code[data-length='2']) { --mg-code-n: 2; }
+.mg-game-root:has(.mg-code[data-length='3']) { --mg-code-n: 3; }
+.mg-game-root:has(.mg-code[data-length='4']) { --mg-code-n: 4; }
+.mg-game-root:has(.mg-code[data-length='5']) { --mg-code-n: 5; }
+.mg-game-root:has(.mg-code[data-length='6']) { --mg-code-n: 6; }
+
+.mg-code {
+  position: relative;
+  display: inline-flex;
+  gap: var(--mg-code-gap, var(--mg-touch-gap));
+  justify-content: center;
+}
+
+.mg-code__slot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--mg-code-slot, var(--mg-touch-min));
+  height: var(--mg-code-slot, var(--mg-touch-min));
+  border-radius: var(--mg-radius-s);
+  background: var(--mg-surface);
+  border: 3px solid var(--mg-sand);
+  font-family: var(--mg-font-letter-print);
+  font-size: calc(var(--mg-code-slot, var(--mg-touch-min)) * 0.5);
+  line-height: 1;
+  color: var(--mg-ink);
+}
+
+/* --- celebrate: ≤ 12 listków, ≤ 1,5 s (Z-04) --- */
+.mg-celebrate {
+  position: absolute;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.mg-celebrate__piece {
+  position: absolute;
+  left: -16px;
+  top: -16px;
+  width: 32px;
+  height: 32px;
+  opacity: 0;
+  /* 1200 ms; koniec animacji sprząta warstwę (animationend), TS nie zna tego czasu. */
+  animation: mg-celebrate-float calc(var(--mg-dur-slow) * 1.5) var(--mg-ease) forwards;
+}
+
+@keyframes mg-celebrate-float {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.7);
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx), var(--dy)) scale(1);
+  }
+}
+
+/* --- hint: paluszek, klawisz albo poświata; spokojnie „oddycha” --- */
+.mg-hint {
+  position: absolute;
+  z-index: 15;
+  pointer-events: none;
+  animation: mg-hint-breathe var(--mg-dur-breathe) var(--mg-ease) infinite;
+}
+
+.mg-hint--tap {
+  right: -20px;
+  bottom: -28px;
+  width: 60px;
+  height: 60px;
+}
+
+.mg-hint--tap svg {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  stroke: var(--mg-ink);
+  fill: var(--mg-surface);
+}
+
+.mg-hint__ring {
+  position: absolute;
+  left: 4px;
+  top: -6px;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--mg-radius-round);
+  border: 5px solid var(--mg-honey);
+}
+
+.mg-hint--key {
+  left: 50%;
+  top: -72px;
+  transform: translateX(-50%);
+}
+
+/* Klawisz przypięty do pola odpowiedzi cyframi: obok pola (z prawej), nie nad nim — nad polem
+   stoi zwykle pytanie, które klawisz by zasłonił. Scena zostawia na to miejsce z prawej strony pola. */
+.mg-code > .mg-hint--key {
+  top: 50%;
+  left: calc(100% + var(--mg-space));
+  transform: translateY(-50%);
+}
+
+/* Gdy w zwykłym miejscu klawisz wyszedłby poza scenę (effects.ts sprawdza to przy tworzeniu):
+   pod celem, a gdy i tam brak miejsca — na środku celu. */
+.mg-hint--key.mg-hint--below,
+.mg-code > .mg-hint--key.mg-hint--below {
+  top: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.mg-hint--key.mg-hint--on,
+.mg-code > .mg-hint--key.mg-hint--on {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.mg-hint__key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+  height: 60px;
+  padding: 0 12px;
+  border-radius: var(--mg-radius-s);
+  background: var(--mg-surface);
+  border: 3px solid var(--mg-sand);
+  border-bottom-width: 8px;
+  font-family: var(--mg-font-letter-print);
+  font-size: 2rem;
+  color: var(--mg-ink);
+}
+
+.mg-hint--glow {
+  inset: -10px;
+  /* Kształt celu: okrągły na okrągłym, zaokrąglony prostokąt na dużym polu (nie wielki owal). */
+  border-radius: inherit;
+  box-shadow: 0 0 0 var(--mg-focus-width) var(--mg-honey);
+}
+
+@keyframes mg-hint-breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* --- wobble: łagodne kołysanie po błędzie (Z-18: 2 wahnięcia, ≤ 8 px, ~400 ms) --- */
+/* Właściwość translate, nie transform — transform elementu należy do gry. */
+.mg-wobble {
+  animation: mg-wobble var(--mg-dur-base) var(--mg-ease);
+}
+
+@keyframes mg-wobble {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  25% {
+    translate: -6px 0;
+  }
+  75% {
+    translate: 6px 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mg-celebrate__piece {
+    animation-name: mg-fade-only;
+  }
+
+  /* Zamiast ruchu krótkie przygaszenie. */
+  .mg-wobble {
+    animation-name: mg-wobble-dim;
+  }
+}
+
+@keyframes mg-wobble-dim {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@keyframes mg-fade-only {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+  }
+}

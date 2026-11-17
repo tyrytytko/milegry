@@ -1,0 +1,161 @@
+/*
+ * „Pary pod liśćmi” — style tylko tej gry (prefiks .g-pary). Kolory, czasy i promienie wyłącznie z tokenów.
+ * Bok karty i liczbę kolumn liczy game.ts (logic.ts → bestLayout) i podaje w --g-pary-card / --g-pary-cols:
+ * karty ≥ 80 px z odstępem 16 px (Z-33). Margines sceny = PAD i EDGE w game.ts.
+ */
+
+/* --- Scena: polana, stała przez całą rundę (Z-02); środek należy do kart (Z-13) --- */
+.g-pary-scene {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--mg-space-s) var(--mg-space-s) var(--mg-edge-safe);
+  background: var(--mg-scene-grass);
+}
+
+.g-pary-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center; /* niepełny ostatni rząd stoi na środku */
+  gap: var(--mg-touch-gap);
+  width: calc(var(--g-pary-cols, 2) * var(--g-pary-card, var(--mg-touch-min)) + (var(--g-pary-cols, 2) - 1) * var(--mg-touch-gap));
+}
+
+/* --- Karta: jasne miejsce na polanie, pod liściem treść. position: relative — rdzeń kotwiczy tu podpowiedzi --- */
+.g-pary-card {
+  position: relative;
+  flex: none;
+  width: var(--g-pary-card, var(--mg-touch-min));
+  height: var(--g-pary-card, var(--mg-touch-min));
+  border-radius: var(--mg-radius);
+  background: var(--mg-surface);
+  box-shadow: var(--mg-shadow-soft);
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  transition:
+    background-color var(--mg-dur-base) var(--mg-ease),
+    box-shadow var(--mg-dur-base) var(--mg-ease);
+}
+
+/* Treść pod liściem: niewidoczna, póki liść leży (rogi karty nie zdradzają obrazka). */
+.g-pary-face {
+  position: absolute;
+  inset: 10%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  align-content: center;
+  justify-content: center;
+  opacity: 0;
+  color: var(--mg-ink);
+  line-height: 1;
+  transition: opacity var(--mg-dur-base) var(--mg-ease);
+}
+
+.g-pary-open .g-pary-face {
+  opacity: 1;
+}
+
+.g-pary-art,
+.g-pary-art svg,
+.g-pary-leaf svg,
+.g-pary-nut svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.g-pary-art {
+  width: 100%;
+  height: 100%;
+}
+
+/* Litera (ctx.ui.letter — rozmiar = font-size rodzica, Z-35) i cyfra */
+.g-pary-face--letter {
+  font-size: calc(var(--g-pary-card, var(--mg-touch-min)) * 0.5);
+}
+
+.g-pary-face--digit {
+  font-size: calc(var(--g-pary-card, var(--mg-touch-min)) * 0.56);
+  font-weight: var(--mg-font-weight-bold);
+}
+
+/* Zbiór: żołędzie w rzędach (do 4 — po dwa, 5 — trzy i dwa); liczy się liczba, nie wielkość */
+.g-pary-face--set {
+  inset: 5%;
+  gap: 3%;
+}
+
+.g-pary-nut {
+  width: 44%;
+  aspect-ratio: 1;
+}
+
+.g-pary-face--set[data-n='1'] .g-pary-nut {
+  width: 64%;
+}
+
+/* 5 — jak na kostce: cztery w rogach i jeden w środku. Okrągłe żołędzie o boku ≤ 41% nie nachodzą na siebie
+   po przekątnej, więc są większe niż w rzędzie po trzy (≈ 0,39 boku karty zamiast 0,29). */
+.g-pary-face--set[data-n='5'] {
+  inset: 3%;
+}
+
+.g-pary-face--set[data-n='5'] .g-pary-nut {
+  position: absolute;
+  width: 41%;
+}
+
+.g-pary-face--set[data-n='5'] .g-pary-nut:nth-child(1) { top: 0; left: 0; }
+.g-pary-face--set[data-n='5'] .g-pary-nut:nth-child(2) { top: 0; right: 0; }
+.g-pary-face--set[data-n='5'] .g-pary-nut:nth-child(3) { top: 29.5%; left: 29.5%; }
+.g-pary-face--set[data-n='5'] .g-pary-nut:nth-child(4) { bottom: 0; left: 0; }
+.g-pary-face--set[data-n='5'] .g-pary-nut:nth-child(5) { bottom: 0; right: 0; }
+
+/* --- Liść: odchyla się w bok przy odkryciu (szybciej), wraca powoli (Z-04) --- */
+.g-pary-leaf {
+  position: absolute;
+  inset: 2%;
+  transition:
+    transform var(--mg-dur-slow) var(--mg-ease),
+    opacity var(--mg-dur-slow) var(--mg-ease);
+}
+
+.g-pary-open .g-pary-leaf {
+  opacity: 0;
+  transform: translate(28%, -22%) rotate(20deg);
+  transition:
+    transform var(--mg-dur-base) var(--mg-ease),
+    opacity var(--mg-dur-base) var(--mg-ease);
+}
+
+/* --- Para znaleziona: karta ma tło „dobrze” i obwódkę (kolor + kształt, Z-15), obrazek raz łagodnie podskakuje (Z-20) --- */
+.g-pary-matched {
+  background: var(--mg-sage-light);
+  box-shadow: inset 0 0 0 3px var(--mg-moss);
+  cursor: default;
+}
+
+.g-pary-matched .g-pary-face {
+  animation: g-pary-home var(--mg-dur-slow) var(--mg-ease) both;
+}
+
+@keyframes g-pary-home {
+  50% {
+    transform: translateY(-8%);
+  }
+}
+
+/* Z-05: zamiast ruchu samo przenikanie */
+@media (prefers-reduced-motion: reduce) {
+  .g-pary-open .g-pary-leaf {
+    transform: none;
+  }
+
+  .g-pary-matched .g-pary-face {
+    animation: none;
+  }
+}

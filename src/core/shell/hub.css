@@ -1,0 +1,212 @@
+/* Hub: jedna siatka gier na jednym ekranie. Liczbę kolumn, bok obrazka i wysokość nagłówka liczy
+   hubLayout.ts i podaje w --mg-hub-cols / --mg-hub-tile / --mg-hub-header (tam też są wszystkie odstępy). */
+
+.mg-hub {
+  --mg-hub-cols: 3;
+  --mg-hub-tile: var(--mg-touch-min);
+  --mg-hub-header: 48px;
+  min-height: 100dvh;
+  /* Zwykłe odstępy plus bezpieczne marginesy (tokens.css, --mg-safe-*); z dołu odsuwa siatkę jej pas
+     przy krawędzi. hubLayout.ts liczy z tymi samymi wartościami (readSafeInsets w hub.ts). */
+  padding: calc(var(--mg-space-s) + var(--mg-safe-top)) calc(var(--mg-space) + var(--mg-safe-right)) 0
+    calc(var(--mg-space) + var(--mg-safe-left));
+  display: flex;
+  flex-direction: column;
+  /* Odstęp nagłówek–siatka: przycisk „Dla rodziców” ≥ 16 px od kafelków (hubLayout: headerGap). */
+  gap: var(--mg-space);
+  /* Długie tapnięcie nie zaznacza tekstu (U14). */
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Pas wysokości przycisku „Dla rodziców”: jeżyk z napisem wyśrodkowany w miejscu obok przycisku,
+   przycisk w prawym górnym rogu — tak samo w pionie i w poziomie. Bok przycisku to --mg-frame-btn
+   (hold.css); hubLayout.ts powtarza go w HUB_LAYOUT.parents — zmieniaj oba razem. */
+.mg-hub__header {
+  display: flex;
+  align-items: center;
+  gap: var(--mg-space);
+  height: var(--mg-hub-header);
+}
+
+.mg-hub__brand {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mg-space);
+}
+
+.mg-hub__logo {
+  flex: none;
+  width: 56px;
+  height: 56px;
+}
+
+.mg-hub__title {
+  font-size: var(--mg-font-size-xl);
+  white-space: nowrap;
+}
+
+.mg-hub__grid {
+  display: grid;
+  grid-template-columns: repeat(var(--mg-hub-cols), var(--mg-hub-tile));
+  justify-content: center;
+  gap: var(--mg-touch-gap);
+  /* Pas przy dolnej krawędzi bez elementów interaktywnych (Z-33); obejmuje dolny bezpieczny margines,
+     a gdy ten jest większy — rośnie do niego (hubLayout: max, nie suma). */
+  padding-bottom: max(var(--mg-edge-safe), var(--mg-safe-bottom));
+}
+
+/* Niewidoczna miarka: hub.ts odczytuje z niej bezpieczne marginesy w px dla hubLayout.ts. */
+.mg-hub__safe-probe {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  visibility: hidden;
+  pointer-events: none;
+  padding: var(--mg-safe-top) var(--mg-safe-right) var(--mg-safe-bottom) var(--mg-safe-left);
+}
+
+.mg-hub__empty {
+  text-align: center;
+  color: var(--mg-ink-soft);
+}
+
+.mg-tile {
+  --mg-tile-accent: var(--mg-sage-light);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mg-space-xs);
+  width: var(--mg-hub-tile);
+  color: var(--mg-ink);
+  text-decoration: none;
+  transition: transform var(--mg-dur-base) var(--mg-ease);
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
+}
+
+/* Kolor obszaru — pomoc dla rodzica; obszar niesie też położenie w siatce i etykieta (Z-15). */
+.mg-tile--litery {
+  --mg-tile-accent: color-mix(in srgb, var(--mg-honey) 35%, var(--mg-surface));
+}
+.mg-tile--liczby {
+  --mg-tile-accent: var(--mg-mist);
+}
+.mg-tile--ksztalty {
+  --mg-tile-accent: color-mix(in srgb, var(--mg-rosehip) 30%, var(--mg-surface));
+}
+.mg-tile--logika {
+  --mg-tile-accent: var(--mg-sage-light);
+}
+.mg-tile--pamiec {
+  --mg-tile-accent: color-mix(in srgb, var(--mg-berry) 25%, var(--mg-surface));
+}
+
+[data-last-input='keyboard'] .mg-tile:focus-visible,
+[data-last-input='keyboard'] .mg-tile.mg-focused {
+  transform: translateY(-3px);
+}
+
+@media (hover: hover) {
+  .mg-tile:hover {
+    transform: translateY(-3px);
+  }
+}
+
+.mg-tile__icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--mg-hub-tile);
+  height: var(--mg-hub-tile);
+  padding: 12%;
+  border-radius: var(--mg-radius);
+  background: var(--mg-tile-accent);
+  box-shadow: var(--mg-shadow-soft);
+  transition:
+    box-shadow var(--mg-dur-fast) var(--mg-ease),
+    background-color var(--mg-dur-fast) var(--mg-ease);
+}
+
+/* Wciśnięcie pod palcem (pressFeedback.ts; tylko kafelek gry działającej w tym trybie): kafelek
+   łagodnie opada, cień się spłaszcza, tło lekko ciemnieje. Selektor mocniejszy niż uniesienie pod
+   myszą i ramka klawiatury, żeby wciśnięcie wygrywało. Przy „ogranicz ruch” zostaje cień i tło. */
+.mg-hub .mg-tile.mg-pressed {
+  transform: translateY(2px);
+  transition-duration: var(--mg-dur-fast);
+}
+
+.mg-hub .mg-tile.mg-pressed .mg-tile__icon {
+  background-color: color-mix(in srgb, var(--mg-tile-accent) 88%, var(--mg-ink));
+  box-shadow: var(--mg-shadow-pressed);
+}
+
+.mg-tile__icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Dwa wiersze zarezerwowane zawsze — wszystkie kafelki mają tę samą wysokość (hubLayout: titleHeight). */
+.mg-tile__title {
+  height: 2.4em;
+  font-size: var(--mg-font-size-s);
+  font-weight: var(--mg-font-weight-bold);
+  line-height: 1.2;
+  text-align: center;
+}
+
+/* Kafelek za wąski na tytuł (hubLayout: titles = false): same obrazki; tytuł zostaje w aria-label. */
+.mg-hub[data-titles='false'] .mg-tile__title {
+  display: none;
+}
+
+.mg-tile--other-mode .mg-tile__icon > svg {
+  opacity: 0.5;
+}
+
+.mg-tile__note {
+  position: absolute;
+  bottom: var(--mg-space-xs);
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100% - var(--mg-space-s));
+  padding: 0 var(--mg-space-s);
+  text-align: center;
+  border-radius: var(--mg-radius-round);
+  background: var(--mg-surface);
+  color: var(--mg-ink);
+  font-size: var(--mg-font-size-s);
+  line-height: 1.25;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mg-tile:hover,
+  .mg-tile:focus-visible,
+  .mg-tile.mg-focused,
+  .mg-hub .mg-tile.mg-pressed {
+    transform: none;
+  }
+}
+
+.mg-hub__parents {
+  flex: none;
+}
+
+.mg-hub__parents .mg-hold__content {
+  color: var(--mg-ink-soft);
+}
+
+/* Przycisk stoi przy prawej krawędzi: dymek „przytrzymaj” kończy się równo z nim, nie wychodzi poza ekran. */
+.mg-hub__parents .mg-hold__tip {
+  left: auto;
+  right: 0;
+  transform: none;
+}

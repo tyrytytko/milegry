@@ -1,0 +1,136 @@
+/*
+ * Tokeny projektu Miłe Gry — JEDYNE miejsce z kolorami, krojami, rozmiarami i czasami.
+ * Gry i rdzeń używają wyłącznie var(--mg-…).
+ *
+ * Paleta „Leśna polana” (Z-12). Brak czerwieni.
+ * Litery i cyfry zawsze w --mg-ink na jasnym tle (surface/bg ≥ 10:1, honey/water/sage-light/mist ≥ 5:1).
+ * Na ciemnych przyciskach (moss-dark, chestnut) ikona/tekst w --mg-on-dark.
+ */
+:root {
+  /* --- Paleta „Leśna polana” --- */
+  --mg-bg: #f6f1e7;          /* papier — tło aplikacji */
+  --mg-surface: #fffdf8;     /* kartka — karty, kafelki liter */
+  --mg-sand: #e8dcc4;        /* piasek — obramowania, ścieżki */
+  --mg-ink: #3d3a34;         /* kora — litery, cyfry, kontury, tekst */
+  --mg-moss: #7a9a6b;        /* mech — dekoracje, drugi plan (tylko duże elementy) */
+  --mg-moss-dark: #4f6b45;   /* ciemny mech — przyciski główne (biała ikona) */
+  --mg-chestnut: #a0603a;    /* kasztan — akcent, jeżyk */
+  --mg-honey: #e3b35b;       /* miód — wyróżnienie: podpowiedź, cel (nie nośnik fokusu: ≈ 1,7:1 na tle) */
+  --mg-water: #8db3c7;       /* woda — woda, niebo */
+  --mg-berry: #8c7ba8;       /* jagoda — kolor kategorii */
+  --mg-rosehip: #d98c7a;     /* dzika róża — kolor kategorii, policzki */
+  --mg-sage-light: #cfe0c3;  /* szałwia — tło stanu „dobrze” */
+  --mg-mist: #dce8ee;        /* mgła — tło neutralne, stan „spróbuj jeszcze” */
+
+  /* --- Pochodne (tylko z palety) --- */
+  --mg-on-dark: #ffffff;                                         /* ikona/tekst na moss-dark i chestnut */
+  --mg-ink-soft: color-mix(in srgb, var(--mg-ink) 78%, var(--mg-bg));   /* tekst pomocniczy dla rodzica */
+  --mg-backdrop: color-mix(in srgb, var(--mg-ink) 35%, transparent);   /* przyciemnienie pod oknami */
+  --mg-shade: color-mix(in srgb, var(--mg-ink) 10%, transparent);      /* miękkie cienie */
+  --mg-shadow-soft: 0 3px 0 var(--mg-shade), 0 8px 20px var(--mg-shade);
+  --mg-shadow-pressed: 0 1px 0 var(--mg-shade);
+  --mg-focus-color: var(--mg-ink);   /* ramka fokusu: ≈ 10:1 na bg/surface (Z-14: ≥ 3:1) */
+
+  /* Tła scen (gradienty wyłącznie z palety) */
+  --mg-scene-sky: linear-gradient(180deg, var(--mg-mist) 0%, var(--mg-bg) 75%);
+  --mg-scene-water: linear-gradient(180deg, var(--mg-mist) 0%, color-mix(in srgb, var(--mg-water) 55%, var(--mg-mist)) 100%);
+  --mg-scene-grass: color-mix(in srgb, var(--mg-sage-light) 80%, var(--mg-moss));
+  --mg-scene-sand: var(--mg-sand);
+  --mg-scene-forest-floor: color-mix(in srgb, var(--mg-sand) 75%, var(--mg-chestnut));
+
+  /* --- Grafika (core/art) — kolory postaci, wyprowadzone z palety ---
+   * Jasne wypełnienia (< 3:1 na surface/bg) mają obrys *-rim ≥ 3:1 na surface i bg (Z-14). */
+  --mg-art-eye: var(--mg-ink);
+  --mg-art-highlight: #ffffff;
+  --mg-art-cheek: var(--mg-rosehip);
+  --mg-art-shadow: var(--mg-shade);
+  --mg-art-hedgehog: color-mix(in srgb, var(--mg-chestnut) 75%, var(--mg-ink));
+  --mg-art-hedgehog-face: color-mix(in srgb, var(--mg-sand) 80%, var(--mg-surface));
+  --mg-art-squirrel: var(--mg-chestnut);
+  --mg-art-squirrel-light: var(--mg-sand);
+  --mg-art-chick: color-mix(in srgb, var(--mg-honey) 70%, var(--mg-surface));
+  --mg-art-chick-shade: var(--mg-honey);
+  --mg-art-chick-rim: color-mix(in srgb, var(--mg-chestnut) 75%, var(--mg-honey));
+  --mg-art-beak: color-mix(in srgb, var(--mg-rosehip) 60%, var(--mg-honey));
+  --mg-art-egg: var(--mg-surface);
+  --mg-art-egg-shade: color-mix(in srgb, var(--mg-sand) 70%, var(--mg-surface));
+  --mg-art-egg-spot: var(--mg-sand);
+  --mg-art-egg-crack: var(--mg-chestnut);
+  --mg-art-egg-rim: color-mix(in srgb, var(--mg-chestnut) 85%, var(--mg-sand));
+  --mg-art-fish: color-mix(in srgb, var(--mg-rosehip) 75%, var(--mg-honey));
+  --mg-art-fish-fin: var(--mg-rosehip);
+  --mg-art-fish-rim: color-mix(in srgb, var(--mg-chestnut) 65%, var(--mg-rosehip));
+  --mg-art-bubble: color-mix(in srgb, var(--mg-mist) 70%, var(--mg-surface));
+  --mg-art-bubble-rim: color-mix(in srgb, var(--mg-water) 60%, var(--mg-ink));
+  --mg-art-chestnut: color-mix(in srgb, var(--mg-chestnut) 85%, var(--mg-ink));
+  --mg-art-chestnut-light: var(--mg-sand);
+  --mg-art-burr: color-mix(in srgb, var(--mg-moss) 70%, var(--mg-sage-light));
+  --mg-art-burr-spike: color-mix(in srgb, var(--mg-moss) 85%, var(--mg-ink));
+  --mg-art-leaf-sage: var(--mg-moss);
+  --mg-art-leaf-ochre: var(--mg-honey);
+  --mg-art-leaf-rose: var(--mg-rosehip);
+  --mg-art-leaf-brown: var(--mg-chestnut);
+  --mg-art-leaf-sage-rim: color-mix(in srgb, var(--mg-moss) 75%, var(--mg-ink));
+  --mg-art-leaf-ochre-rim: color-mix(in srgb, var(--mg-chestnut) 75%, var(--mg-honey));
+  --mg-art-leaf-rose-rim: color-mix(in srgb, var(--mg-chestnut) 65%, var(--mg-rosehip));
+  --mg-art-leaf-brown-rim: color-mix(in srgb, var(--mg-chestnut) 80%, var(--mg-ink));
+  --mg-art-leaf-vein: var(--mg-surface);
+  --mg-art-trunk: color-mix(in srgb, var(--mg-chestnut) 70%, var(--mg-ink));
+  --mg-art-crown: var(--mg-moss);
+  --mg-art-crown-light: color-mix(in srgb, var(--mg-moss) 60%, var(--mg-sage-light));
+  --mg-art-crown-rim: var(--mg-art-leaf-sage-rim);
+
+  /* --- Kroje (pliki lokalne, licencja OFL; nic z sieci) --- */
+  --mg-font-ui: 'Andika', 'Segoe UI', 'Trebuchet MS', system-ui, sans-serif;
+  /* Litery „do nauki”: jednopiętrowe a/g, wyraźne I/l/1, pełne polskie znaki. */
+  --mg-font-letter-print: 'Andika', sans-serif;
+  /* Pisane: celowo bez zamiennika — inny krój pokazałby błędny kształt litery. */
+  --mg-font-letter-cursive: 'MG Pisane';
+  --mg-letter-cursive-scale: 1.2;     /* pisana wygląda na mniejszą przy tym samym rozmiarze */
+  --mg-letter-cursive-leading: 1.7;   /* miejsce na pętle G, J, Y, f, g, j, y */
+  --mg-font-size-s: 1rem;
+  --mg-font-size: 1.125rem;
+  --mg-font-size-l: 1.5rem;
+  --mg-font-size-xl: 2.25rem;
+  --mg-font-weight: 400;
+  --mg-font-weight-bold: 700;
+
+  /* --- Rozmiary --- */
+  --mg-touch-min: 80px;     /* cel dotykowy dla dziecka */
+  --mg-touch-gap: 16px;     /* odstęp między celami */
+  --mg-frame-btn: var(--mg-touch-min);  /* przyciski ramki (domek, poziom, skórki, zamknij) — Z-33 */
+  --mg-edge-safe: 40px;     /* pas przy dolnej krawędzi bez elementów interaktywnych */
+  /* Bezpieczne marginesy: pas pod wycięciem aparatu, zaokrąglonym rogiem, paskiem systemu (wymaga
+     viewport-fit=cover w index.html; bez wycięcia 0). Hub i ramka gry biorą je tylko stąd, więc w podglądzie
+     da się zasymulować wycięcie, nadpisując te zmienne na <html>. */
+  --mg-safe-top: env(safe-area-inset-top, 0px);
+  --mg-safe-right: env(safe-area-inset-right, 0px);
+  --mg-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --mg-safe-left: env(safe-area-inset-left, 0px);
+  --mg-space-xs: 4px;
+  --mg-space-s: 8px;
+  --mg-space: 16px;
+  --mg-space-l: 24px;
+  --mg-space-xl: 40px;
+  --mg-radius-s: 12px;
+  --mg-radius: 20px;
+  --mg-radius-l: 32px;
+  --mg-radius-round: 999px;
+  --mg-focus-width: 6px;
+
+  /* --- Ruch: wolno i łagodnie (Z-03, Z-04) --- */
+  --mg-ease: cubic-bezier(0.45, 0, 0.55, 1); /* ease-in-out */
+  --mg-dur-fast: 200ms;
+  --mg-dur-base: 400ms;
+  --mg-dur-slow: 800ms;
+  --mg-dur-breathe: 3200ms;   /* bardzo powolne „oddychanie” podpowiedzi */
+  --mg-dur-reward: 1000ms;    /* efekt nagrody na ekranie końca rundy: z opóźnieniem ≤ 0,5 s mieści się w 1,5 s (Z-04) */
+}
+
+/* Z-05: ograniczony ruch — przesunięcia znikają, zostaje przenikanie. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --mg-dur-fast: 1ms;
+    --mg-dur-breathe: 0ms;
+  }
+}

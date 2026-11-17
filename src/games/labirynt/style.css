@@ -1,0 +1,194 @@
+/*
+ * „Labirynty z jeżykiem” — style tylko tej gry (prefiks .g-labirynt). Kolory, czasy i promienie wyłącznie z tokenów.
+ * Rozmiary w jednostkach kontenera (root gry ma container-type: size): bok pola liczony jest z wolnego miejsca
+ * sceny i liczby pól, więc plansza skaluje się w pionie i w poziomie (Z-34) bez osobnych układów.
+ */
+
+/* --- Scena: stała przez całą rundę (Z-02); polana dookoła, plansza na środku --- */
+.g-labirynt-scene {
+  --g-labirynt-pad: 4px;
+  /* Bok pola: tyle, ile się mieści na szerokość i wysokość, najwyżej 112 px (mały labirynt nie rośnie bez końca). */
+  --g-labirynt-cell: min(
+    calc((100cqw - 2 * var(--g-labirynt-pad)) / var(--cols)),
+    calc((100cqh - 2 * var(--g-labirynt-pad)) / var(--rows)),
+    112px
+  );
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--mg-scene-grass);
+}
+
+/* Plansza: jasne ścieżki; cała jest celem stuknięcia („idź w tę stronę”), więc cel dotykowy jest duży (Z-33). */
+.g-labirynt-board {
+  position: relative;
+  width: calc(var(--cols) * var(--g-labirynt-cell));
+  height: calc(var(--rows) * var(--g-labirynt-cell));
+  border-radius: var(--mg-radius-s);
+  background: var(--mg-surface);
+  cursor: pointer;
+}
+
+/* Ściany (żywopłot): ciemny mech na jasnej ścieżce — kontrast ok. 6:1. Grubość rośnie z polem. */
+.g-labirynt-walls,
+.g-labirynt-walls svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.g-labirynt-walls path {
+  fill: none;
+  stroke: var(--mg-moss-dark);
+  stroke-width: 0.13;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* --- Elementy na polach: położenie z --x / --y (numer kolumny i rzędu) --- */
+.g-labirynt-tile {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--g-labirynt-cell);
+  height: var(--g-labirynt-cell);
+  padding: calc(var(--g-labirynt-cell) * 0.12);
+  translate: calc(var(--x) * var(--g-labirynt-cell)) calc(var(--y) * var(--g-labirynt-cell));
+  pointer-events: none;
+}
+
+.g-labirynt-tile svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Domek: cel wyróżniony miodowym tłem pola; po dojściu tło spokojnie zmienia się na „dobrze” (Z-20). */
+.g-labirynt-home {
+  padding: calc(var(--g-labirynt-cell) * 0.08);
+  transition: background-color var(--mg-dur-base) var(--mg-ease);
+}
+
+.g-labirynt-home::before {
+  content: '';
+  position: absolute;
+  inset: 10%;
+  z-index: -1;
+  border-radius: var(--mg-radius-s);
+  background: color-mix(in srgb, var(--mg-honey) 35%, var(--mg-surface));
+  transition: background-color var(--mg-dur-base) var(--mg-ease);
+}
+
+.g-labirynt-home--reached::before {
+  background: var(--mg-sage-light);
+}
+
+/* Brama: po otwarciu spokojnie znika (≤ 800 ms, Z-20). */
+.g-labirynt-gate {
+  padding: calc(var(--g-labirynt-cell) * 0.06);
+  transition: opacity var(--mg-dur-base) var(--mg-ease);
+}
+
+.g-labirynt-gate--open {
+  opacity: 0;
+}
+
+/* Jeżyk: jedyny ruchomy obiekt (Z-01); krok to krótkie, łagodne przesunięcie (przy ograniczonym ruchu — skok).
+   Wypełnia prawie całe pole, żeby na najmniejszym polu (ok. 35 px) był jak największy. */
+.g-labirynt-hog {
+  z-index: 2;
+  padding: calc(var(--g-labirynt-cell) * 0.04);
+  transition: translate var(--mg-dur-fast) var(--mg-ease);
+}
+
+.g-labirynt-hog-body {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.g-labirynt-hog--left svg {
+  transform: scaleX(-1);
+}
+
+/* Ściana: jeżyk opiera się o nią o kilka pikseli i wraca (jedno wychylenie, bez dźwięku — to nie błąd). */
+.g-labirynt-lean {
+  animation: g-labirynt-lean var(--mg-dur-fast) var(--mg-ease);
+}
+
+@keyframes g-labirynt-lean {
+  50% {
+    translate: calc(var(--lx) * 10%) calc(var(--ly) * 10%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .g-labirynt-lean {
+    animation: none;
+  }
+}
+
+/* Kotwica podpowiedzi (klawiatura): klawisz ze strzałką nad polem następnego kroku (przy górnej krawędzi
+   rdzeń stawia go pod polem) — ponad sąsiednimi polami. */
+.g-labirynt-next {
+  z-index: 3;
+}
+
+/* --- Zbliżenie na bramę: tabliczka z kodem nad polem do wpisania; cyfry stoją dokładnie nad kratkami --- */
+.g-labirynt-panel {
+  /* Cyfry tabliczki w rozmiarze, rozstawie i wielkości pisma kratek pola odpowiedzi z rdzenia (ui.css: .mg-code__slot). */
+  --g-labirynt-slot: var(--mg-code-slot);
+  --g-labirynt-slot-gap: var(--mg-code-gap);
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: max(var(--mg-space-s), 3cqh);
+  background: color-mix(in srgb, var(--mg-surface) 94%, transparent);
+  animation: g-labirynt-fade var(--mg-dur-base) var(--mg-ease) both;
+}
+
+@keyframes g-labirynt-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+.g-labirynt-lock {
+  width: min(22cqh, 30cqw, 120px);
+  height: min(22cqh, 30cqw, 120px);
+}
+
+.g-labirynt-lock svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Tabliczka: cyfry atramentem na jasnym tle (Z-14); position i promień — tu rdzeń kładzie poświatę 1. błędu. */
+.g-labirynt-sign {
+  position: relative;
+  display: flex;
+  gap: var(--g-labirynt-slot-gap);
+  padding: var(--mg-space-xs) 0;
+  border-radius: var(--mg-radius-s);
+  background: color-mix(in srgb, var(--mg-honey) 35%, var(--mg-surface));
+  box-shadow: var(--mg-shadow-soft);
+}
+
+.g-labirynt-digit {
+  width: var(--g-labirynt-slot);
+  height: var(--g-labirynt-slot);
+  display: grid;
+  place-items: center;
+  font-size: calc(var(--g-labirynt-slot) * 0.5);
+  line-height: 1;
+  color: var(--mg-ink);
+}

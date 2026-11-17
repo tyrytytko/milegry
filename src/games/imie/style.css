@@ -1,0 +1,238 @@
+/*
+ * „Literki z imienia” — style tylko tej gry (prefiks .g-imie). Kolory, czasy i promienie wyłącznie z tokenów.
+ * Scena: siatka par [litera wzoru nad kratką]. Kratki NIE są celami dotykowymi (odpowiada się klawiszem albo
+ * przyciskami rdzenia pod sceną), więc przy długim imieniu maleją razem z literami — bok kratki --s wynika
+ * z szerokości i wysokości sceny (cqw/cqh) oraz liczby kolumn i rzędów, które game.ts podaje w zmiennych
+ * --g-imie-nc/nr (wąska scena, ≤ 5 w rzędzie) i --g-imie-wc/wr (szeroka, ≤ 10 w rzędzie) — Z-34.
+ */
+
+.g-imie-scene {
+  --cols: var(--g-imie-nc);
+  --rows: var(--g-imie-nr);
+  /* Miejsce nad siatką na klawisz-podpowiedź rdzenia (60 px + odstęp, staje nad literą wzoru) — tylko klawiatura. */
+  --top: 0px;
+  /* Miejsce pod siatką na kafelki wyboru litery z ogonkiem — tylko klawiatura i słowo z ogonkami. */
+  --bottom: 0px;
+  --pad: var(--mg-space);
+  /* Bok kratki. Para = wzór (0,8 s) + odstęp (0,1 s) + kratka (s); odstęp rzędów 0,3 s, kolumn 0,12 s. */
+  /* Bez dolnej granicy: przy bardzo długim imieniu w niskiej scenie kratki maleją, zamiast wyjść poza scenę. */
+  --s: min(
+    120px,
+    calc((100cqw - 2 * var(--pad)) / (var(--cols) * 1.12)),
+    calc((100cqh - 2 * var(--pad) - var(--top) - var(--bottom)) / (var(--rows) * 2.2))
+  );
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: calc(var(--pad) + var(--top)) var(--pad) var(--pad);
+  background: var(--mg-scene-sky);
+}
+
+.g-imie-scene[data-mode='keyboard'] {
+  --top: 68px;
+}
+
+.g-imie-scene[data-tiles] {
+  --bottom: calc(var(--mg-touch-min) + var(--mg-touch-gap));
+}
+
+/* Miejsce komórki: game.ts podaje je osobno dla sceny wąskiej (--nr/--nc) i szerokiej (--wr/--wc), wg layout()
+   z logic.ts — części imienia („JAN-” / „PAWEŁ”) nie dzielą się między rzędy. */
+.g-imie-grid > * {
+  display: var(--nd, flex);
+  grid-row: var(--nr);
+  grid-column: var(--nc);
+}
+
+@container (min-aspect-ratio: 3/2) {
+  .g-imie-scene {
+    --cols: var(--g-imie-wc);
+    --rows: var(--g-imie-wr);
+  }
+
+  .g-imie-grid > * {
+    display: var(--wd, flex);
+    grid-row: var(--wr);
+    grid-column: var(--wc);
+  }
+}
+
+.g-imie-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), var(--s));
+  gap: calc(var(--s) * 0.3) calc(var(--s) * 0.12);
+}
+
+.g-imie-pair {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--s) * 0.1);
+}
+
+/* Litera wzoru. position: relative — rdzeń dokłada tu poświatę i klawisz-podpowiedź (span.mg-hint na końcu). */
+.g-imie-model {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(var(--s) * 0.8);
+  border-radius: var(--mg-radius-s);
+  font-size: calc(var(--s) * 0.7);
+  transition: background-color var(--mg-dur-base) var(--mg-ease);
+}
+
+/* Klawisz-podpowiedź bez wiersza tekstu: inaczej dziedziczy wielką czcionkę wzoru, wysoki wiersz spycha
+   klawisz w dół i ten zasłania górę litery wzoru. Jako flex ma tylko swoje 60 px i stoi 12 px nad wzorem. */
+.g-imie-model > .mg-hint--key {
+  display: flex;
+}
+
+.g-imie-model .mg-letter {
+  transition: opacity var(--mg-dur-slow) var(--mg-ease);
+}
+
+/* Poziomy 1–2: litera wzoru nad bieżącą kratką jest wyróżniona. */
+.g-imie-model.g-imie-now {
+  background: color-mix(in srgb, var(--mg-honey) 45%, var(--mg-surface));
+}
+
+/* Wzór przygaszony (poziom 4 po chwili, poziom 5 od początku)… */
+.g-imie-faded .g-imie-model .mg-letter {
+  opacity: 0;
+}
+
+/* …i z powrotem widoczny, gdy rdzeń pokazuje przy nim podpowiedź (poświata po 1. błędzie, klawisz-podpowiedź). */
+.g-imie-faded:has(.mg-hint) .g-imie-model .mg-letter {
+  opacity: 1;
+}
+
+/* Kratka to miejsce na literę, nie przycisk (Z-33): płaska, bez cienia, z przerywaną ramką — inaczej niż
+   przyciski liter pod sceną. Bieżąca i wypełniona mają ramkę ciągłą. */
+.g-imie-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--s);
+  border: 3px dashed color-mix(in srgb, var(--mg-ink) 30%, var(--mg-sand));
+  border-radius: var(--mg-radius-s);
+  background: color-mix(in srgb, var(--mg-surface) 50%, transparent);
+  font-size: calc(var(--s) * 0.72);
+  transition:
+    background-color var(--mg-dur-base) var(--mg-ease),
+    border-color var(--mg-dur-base) var(--mg-ease);
+}
+
+/* Krój pisany jest w rdzeniu powiększony (×1,2) i ma wysoką interlinię na pętle — tu mniejszy, żeby został w kratce. */
+.g-imie-slot:has([data-script='cursive']) {
+  font-size: calc(var(--s) * 0.42);
+}
+
+.g-imie-model:has([data-script='cursive']) {
+  font-size: calc(var(--s) * 0.38);
+}
+
+/* Bieżąca kratka: „tu teraz”. */
+.g-imie-slot.g-imie-next {
+  border-style: solid;
+  border-color: var(--mg-honey);
+  background: color-mix(in srgb, var(--mg-honey) 22%, var(--mg-surface));
+}
+
+.g-imie-slot.g-imie-filled {
+  border-style: solid;
+  border-color: var(--mg-moss);
+  background: var(--mg-sage-light);
+}
+
+/* Poziom 1: przygaszony „duch” litery w bieżącej kratce. */
+.g-imie-ghost {
+  opacity: 0.45;
+}
+
+/* Trafienie (Z-20): litera wskakuje na miejsce (400 ms). */
+.g-imie-filled .mg-letter {
+  animation: g-imie-hop var(--mg-dur-base) var(--mg-ease) both;
+}
+
+@keyframes g-imie-hop {
+  from {
+    opacity: 0;
+    transform: translateY(-45%);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Stały odstęp imienia (spacja albo myślnik) — pusta komórka; myślnik to krótka kreska na wysokości kratek. */
+.g-imie-gap {
+  position: relative;
+}
+
+.g-imie-gap[data-dash]::after {
+  content: '';
+  position: absolute;
+  left: 25%;
+  right: 25%;
+  bottom: calc(var(--s) * 0.5 - 3px);
+  height: 6px;
+  border-radius: var(--mg-radius-round);
+  background: var(--mg-ink);
+}
+
+/* Kafelki wyboru litery z ogonkiem (klawiatura): cele ≥ 80 px z odstępem 16 px (Z-33). */
+.g-imie-choices {
+  display: flex;
+  gap: var(--mg-touch-gap);
+  justify-content: center;
+}
+
+.g-imie-scene[data-tiles] .g-imie-choices {
+  min-height: var(--mg-touch-min);
+  margin-top: var(--mg-touch-gap);
+}
+
+.g-imie-tile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--mg-touch-min);
+  height: var(--mg-touch-min);
+  padding: 0;
+  border: 3px solid var(--mg-sand);
+  border-radius: var(--mg-radius);
+  background: var(--mg-surface);
+  box-shadow: var(--mg-shadow-soft);
+  font-size: 48px;
+  cursor: pointer;
+}
+
+/* Nowe kafelki wchodzą przenikaniem; animacja na literze, nie na kafelku (kafelek kołysze rdzeń po błędzie). */
+.g-imie-tile .mg-letter {
+  animation: g-imie-in var(--mg-dur-base) var(--mg-ease) both;
+}
+
+.g-imie-tile:has([data-script='cursive']) {
+  font-size: 30px;
+}
+
+@keyframes g-imie-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Ograniczony ruch (Z-05): litera pojawia się przenikaniem, bez skoku. */
+@media (prefers-reduced-motion: reduce) {
+  .g-imie-filled .mg-letter {
+    animation-name: g-imie-in;
+  }
+}

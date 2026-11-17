@@ -1,0 +1,271 @@
+/*
+ * „Patyczki jeżyka” — style tylko tej gry (prefiks .g-patyczki). Kolory, czasy i promienie wyłącznie z tokenów.
+ * Rozmiary w jednostkach kontenera (cqw/cqh) z progiem (Z-33); wąska scena przez @container (Z-34).
+ *
+ * Miara: „szczebelek” (--g-patyczki-pitch) = rozstaw patyczków; kupka, znak i mata mają szerokość wyrażoną w nich.
+ * Liczby układu ustawia game.ts jako zmienne na scenie — prosto z logic.ts, żeby nie stały w dwóch miejscach:
+ *   --g-patyczki-slots (najszersze zadanie poziomu), --g-patyczki-bundle-gap (odstęp piątek), --g-patyczki-pile-pad
+ *   (wypełnienie kupki, obie strony razem), --g-patyczki-sign (znak „+”), --g-patyczki-field-pad (wypełnienie maty).
+ * Mata ma stałą szerokość `slots` szczebelków przez cały poziom, więc nic pod nią nie przesuwa się między zadaniami (Z-02).
+ */
+
+.g-patyczki-scene {
+  /* Klawisz-podpowiedź rdzenia stoi z prawej strony pola odpowiedzi: 60 px to bok klawisza (.mg-hint__key w core/ui/ui.css),
+     --mg-space to jego odstęp od pola (.mg-code > .mg-hint--key, tamże). Tylko klawiatura; na dotyku miejsca nie trzeba. */
+  --g-patyczki-key: calc(60px + var(--mg-space));
+  /* Miejsce na odpowiedź: jedna kratka (dwie na poziomie z „10”) + klawisz-podpowiedź — stałe na poziomie (Z-02). */
+  --g-patyczki-answer: calc(var(--mg-touch-min) + var(--g-patyczki-key));
+  /* Margines od krawędzi sceny (miejsce na poświatę podpowiedzi). */
+  --g-patyczki-pad: calc(var(--mg-space-s) + var(--mg-space-xs));
+  /* Szczebelek: najszersze zadanie mieści się w scenie; nie więcej niż 0,6 celu dotykowego (48 px — na laptopie zadanie
+     ma wypełniać scenę, U13) i nie mniej niż 14 px — poniżej tego kreskowany obrys zabranego patyczka się zlewa (Z-15).
+     Przy 14 px najszerszy poziom (5: 15,7 szczebelka) potrzebuje sceny ok. 244 px; najwęższa znana scena to 251 px
+     (telefon poziomo 667 × 375). */
+  --g-patyczki-pitch: max(
+    14px,
+    min(calc(var(--mg-touch-min) * 0.6), calc((100cqw - 2 * var(--g-patyczki-pad)) / var(--g-patyczki-slots)))
+  );
+  /* Wysokość patyczka: z wysokości sceny (26 % — przy 667 × 375 scena ma 263 px i mata + jeżyk + pole odpowiedzi
+     jeden pod drugim jeszcze się mieszczą), nie mniej niż 44 px i nie więcej niż ~3,6 szczebelka. */
+  --g-patyczki-stick-h: max(44px, min(26cqh, calc(var(--g-patyczki-pitch) * 3.6)));
+  /* Jeżyk: 48 px na telefonie, rośnie z wysokością sceny do 96 px (laptop 1024 × 768: ok. 79 px, U13). */
+  --g-patyczki-hog: clamp(48px, 12cqh, 96px);
+  /* Stała szerokość zapisu: mieści najdłuższy („10 − 9 =”), żeby jeżyk i pole odpowiedzi stały w miejscu. */
+  --g-patyczki-symbol-w: 4.5em;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--mg-scene-sky);
+}
+
+.g-patyczki-scene.g-patyczki-touch {
+  --g-patyczki-key: 0px;
+}
+
+.g-patyczki-scene.g-patyczki-two {
+  --g-patyczki-answer: calc(2 * var(--mg-touch-min) + var(--mg-touch-gap) + var(--g-patyczki-key));
+}
+
+/* Obiekt pytania: podłoże + wiersz [jeżyk, zapis] + (dokładane przez rdzeń) pole odpowiedzi w tym samym wierszu.
+   position: relative — rdzeń kotwiczy w nim poświatę; nic nie zależy od liczby dzieci (:last-child). */
+.g-patyczki-plot {
+  position: relative;
+  border-radius: var(--mg-radius-l);
+  display: grid;
+  grid-template-columns: auto var(--g-patyczki-answer);
+  justify-content: center;
+  align-items: center;
+  gap: var(--mg-space-s) var(--mg-space-s);
+}
+
+/* Podłoże (mata z trawy): kupki leżą w jednym rzędzie, na dole. */
+.g-patyczki-field {
+  grid-column: 1 / -1;
+  justify-self: center;
+  box-sizing: border-box;
+  /* Stała szerokość na poziom = najszersze zadanie; węższe zadania leżą na środku tej samej maty. */
+  width: calc(var(--g-patyczki-pitch) * var(--g-patyczki-slots));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--mg-space-s) calc(var(--g-patyczki-pitch) * var(--g-patyczki-field-pad) / 2);
+  border-radius: var(--mg-radius-l);
+  background: var(--mg-scene-grass);
+  box-shadow: var(--mg-shadow-soft);
+}
+
+/* Kupka: patyczki w piątkach, piątki wyraźnie rozsunięte (jak na liczydle). */
+.g-patyczki-pile {
+  display: flex;
+  align-items: flex-end;
+  gap: calc(var(--g-patyczki-pitch) * var(--g-patyczki-bundle-gap));
+  padding: calc(var(--g-patyczki-pitch) * 0.3) calc(var(--g-patyczki-pitch) * var(--g-patyczki-pile-pad) / 2);
+  border-radius: var(--mg-radius-s);
+  background: color-mix(in srgb, var(--mg-sand) 70%, var(--mg-surface));
+  animation: g-patyczki-in var(--mg-dur-base) var(--mg-ease) both;
+  transition: background var(--mg-dur-base) var(--mg-ease);
+}
+
+.g-patyczki-bundle {
+  display: flex;
+  align-items: flex-end;
+}
+
+/* Patyczek = jeden szczebelek: szerokość 0,6 + po 0,2 marginesu. */
+.g-patyczki-stick {
+  position: relative;
+  box-sizing: border-box;
+  width: calc(var(--g-patyczki-pitch) * 0.6);
+  height: var(--g-patyczki-stick-h);
+  margin: 0 calc(var(--g-patyczki-pitch) * 0.2);
+  border-radius: var(--mg-radius-round);
+  background: var(--mg-art-trunk);
+  transition: opacity var(--mg-dur-base) var(--mg-ease);
+}
+
+/* Zabrany patyczek: tylko obrys (kreskowany), blady i przekreślony — zrozumiały bez koloru i bez słów (Z-15). */
+.g-patyczki-ghost {
+  background: transparent;
+  border: 3px dashed color-mix(in srgb, var(--mg-ink) 55%, transparent);
+}
+
+/* Przekreślenie: długość w szczebelkach, nie w % — procenty liczą się od wnętrza obrysu (bez ramki 3 px), więc na wąskim
+   patyczku (10 px przy 667 × 375) kreska skurczyłaby się do kilku pikseli. 1,6 szczebelka pod kątem 55° sięga w poziomie
+   ±0,46 szczebelka od środka — wystaje poza patyczek, ale nie dotyka sąsiada (jest 0,7 szczebelka dalej). */
+.g-patyczki-ghost::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: calc(50% - 2px);
+  width: calc(var(--g-patyczki-pitch) * 1.6);
+  height: 4px;
+  border-radius: var(--mg-radius-round);
+  background: var(--mg-ink);
+  transform: translateX(-50%) rotate(-55deg);
+}
+
+/* Znak „+”: dwa paski (ten sam kolor co cyfry — to element zadania, nie dekoracja). */
+.g-patyczki-sign {
+  position: relative;
+  flex: none;
+  width: calc(var(--g-patyczki-pitch) * var(--g-patyczki-sign));
+  height: calc(var(--g-patyczki-pitch) * 1.2);
+  transition: opacity var(--mg-dur-base) var(--mg-ease);
+}
+
+.g-patyczki-sign::before,
+.g-patyczki-sign::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  border-radius: var(--mg-radius-round);
+  background: var(--mg-ink);
+  transform: translate(-50%, -50%);
+}
+
+.g-patyczki-sign::before {
+  width: calc(var(--g-patyczki-pitch) * 1.1);
+  height: max(4px, calc(var(--g-patyczki-pitch) * 0.28));
+}
+
+.g-patyczki-sign::after {
+  width: max(4px, calc(var(--g-patyczki-pitch) * 0.28));
+  height: calc(var(--g-patyczki-pitch) * 1.1);
+}
+
+/* Wiersz pod podłożem: jeżyk i zapis działania; pole odpowiedzi (rdzeń) stoi zaraz za nim, w drugiej kolumnie. */
+.g-patyczki-eq {
+  grid-column: 1;
+  grid-row: 2;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--mg-space-s);
+}
+
+.g-patyczki-hedgehog {
+  flex: none;
+  width: var(--g-patyczki-hog);
+  height: var(--g-patyczki-hog);
+}
+
+/* Zapis: mała czcionka-towarzysz konkretu (Z-37), stała szerokość, żeby pole odpowiedzi nie przeskakiwało. */
+.g-patyczki-symbol {
+  flex: none;
+  width: var(--g-patyczki-symbol-w);
+  text-align: right;
+  white-space: nowrap;
+  /* Rośnie z wysokością sceny razem z jeżykiem (U13); na telefonie (scena ≤ 300 px wysokości) zostaje 24 px,
+     więc rachunki progów 300/420 px niżej się nie zmieniają. */
+  font-size: clamp(var(--mg-font-size-l), 5cqh, var(--mg-font-size-xl));
+  font-weight: var(--mg-font-weight-bold);
+  color: var(--mg-ink);
+}
+
+/* Poziomy bez zapisu: miejsce na zapis się nie rezerwuje (jeżyk stoi tuż przy polu odpowiedzi). */
+.g-patyczki-symbol:empty {
+  display: none;
+}
+
+.g-patyczki .mg-code {
+  grid-column: 2;
+  grid-row: 2;
+  justify-self: start;
+}
+
+/* Zapis (z jeżykiem) NAD polem odpowiedzi zamiast obok niego, gdy obok się nie mieści:
+   - scena ≤ 300 px (telefon poziomo 667 × 375 ma 251 px): jeżyk 48 + zapis 108 + kratka 80 + odstępy = 252 px + marginesy;
+   - scena ≤ 420 px na poziomie z „10” (telefon pionowo, 328–343 px): dochodzi druga kratka, razem 348 px + marginesy.
+   Pole odpowiedzi stoi w środkowej kolumnie o stałej szerokości i zaczyna się od jej lewej krawędzi (jak w orzeszkach),
+   więc pierwsza kratka nie rusza się, gdy przy „10” dochodzi druga (Z-02). */
+@container (max-width: 300px) {
+  .g-patyczki-plot {
+    grid-template-columns: 1fr var(--g-patyczki-answer) 1fr;
+  }
+
+  .g-patyczki-eq {
+    grid-column: 1 / -1;
+    justify-content: center;
+  }
+
+  .g-patyczki .mg-code {
+    grid-column: 2;
+    grid-row: 3;
+  }
+}
+
+@container (max-width: 420px) {
+  .g-patyczki-two .g-patyczki-plot {
+    grid-template-columns: 1fr var(--g-patyczki-answer) 1fr;
+  }
+
+  .g-patyczki-two .g-patyczki-eq {
+    grid-column: 1 / -1;
+    justify-content: center;
+  }
+
+  .g-patyczki-two .mg-code {
+    grid-column: 2;
+    grid-row: 3;
+  }
+}
+
+/* --- Reakcja na dobrą odpowiedź (Z-20, ≤ 800 ms): kupki na tle „dobrze”, a ruch to jedno dosunięcie kupki --- */
+.g-patyczki-solved .g-patyczki-pile {
+  background: var(--mg-sage-light);
+}
+
+.g-patyczki-solved .g-patyczki-sign {
+  opacity: 0;
+}
+
+.g-patyczki-solved .g-patyczki-ghost {
+  opacity: 0;
+}
+
+/* Dosunięcie o szerokość znaku „+”; między kupkami zostaje ćwierć szczebelka (8 px przy największych patyczkach). */
+.g-patyczki-solved .g-patyczki-second {
+  transform: translateX(calc(var(--g-patyczki-pitch) * (0.25 - var(--g-patyczki-sign))));
+  transition:
+    transform calc(var(--mg-dur-base) * 1.5) var(--mg-ease),
+    background var(--mg-dur-base) var(--mg-ease);
+}
+
+/* Ruch zastępuje przenikanie (Z-05): druga kupka zostaje, a znak i tło zmieniają się jak zawsze. */
+@media (prefers-reduced-motion: reduce) {
+  .g-patyczki-solved .g-patyczki-second {
+    transform: none;
+  }
+}
+
+@keyframes g-patyczki-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

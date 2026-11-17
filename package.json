@@ -1,0 +1,28 @@
+{
+  "name": "milegry",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Miłe Gry — spokojne gry przeglądarkowe dla dzieci 3–5 lat",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && node scripts/postbuild.mjs",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "check": "npm run typecheck && npm run test && npm run build",
+    "nowa-gra": "node scripts/nowa-gra.mjs",
+    "sprawdz-gre": "node scripts/sprawdz-gre.mjs"
+  },
+  "devDependencies": {
+    "@fontsource/andika": "^5.3.0",
+    "@fontsource/playwrite-pl": "^5.3.0",
+    "@types/node": "^22.20.5",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0"
+  }
+}

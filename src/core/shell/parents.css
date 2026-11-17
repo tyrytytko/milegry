@@ -1,0 +1,130 @@
+/* Panel rodzica i bramka (parents.ts, gate.ts). */
+
+.mg-parents {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: var(--mg-space) var(--mg-space) var(--mg-space-xl);
+}
+
+.mg-parents__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--mg-space);
+  padding: var(--mg-space) 0 var(--mg-space-l);
+}
+
+.mg-parents__header h1 {
+  font-size: var(--mg-font-size-xl);
+}
+
+.mg-parents__main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mg-space);
+}
+
+.mg-parents__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mg-space-s);
+  padding: var(--mg-space-l);
+  border-radius: var(--mg-radius-l);
+  background: var(--mg-surface);
+  box-shadow: var(--mg-shadow-soft);
+}
+
+.mg-parents__section > .mg-btn {
+  align-self: flex-start;
+}
+
+.mg-parents__footer {
+  display: flex;
+  padding-top: var(--mg-space-l);
+}
+
+.mg-parents__heading {
+  font-size: var(--mg-font-size-l);
+}
+
+.mg-parents__label {
+  font-size: var(--mg-font-size);
+  margin-top: var(--mg-space-s);
+}
+
+.mg-parents__hint {
+  color: var(--mg-ink-soft);
+  font-size: var(--mg-font-size-s);
+}
+
+.mg-parents__reset {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--mg-space);
+}
+
+.mg-parents__input,
+.mg-gate__input {
+  min-height: var(--mg-frame-btn);
+  max-width: 320px;
+  padding: 0 var(--mg-space);
+  border: 3px solid var(--mg-sand);
+  border-radius: var(--mg-radius);
+  background: var(--mg-bg);
+  font-size: var(--mg-font-size-l);
+}
+
+.mg-parents__letters {
+  display: flex;
+  gap: var(--mg-space-l);
+  flex-wrap: wrap;
+  min-height: 140px;
+  padding-block: var(--mg-space-s);
+  font-size: 5rem;
+}
+
+/* Kafelek z zapasem na pętle i ogonki liter pisanych (pole litery pisanej jest wyższe i szersze). */
+.mg-parents__letter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.6em;
+  min-height: 130px;
+  padding: 0 0.3em;
+  border-radius: var(--mg-radius);
+  background: var(--mg-bg);
+}
+
+.mg-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mg-touch-gap);
+  margin-top: var(--mg-space-xs);
+}
+
+.mg-btn--warn {
+  background: var(--mg-chestnut);
+  color: var(--mg-on-dark);
+}
+
+.mg-gate__question {
+  font-size: var(--mg-font-size-xl);
+  font-weight: var(--mg-font-weight-bold);
+}
+
+.mg-gate__form {
+  display: flex;
+  gap: var(--mg-space-s);
+  flex-wrap: wrap;
+}
+
+.mg-gate__input {
+  width: 120px;
+}
+
+.mg-parents__done {
+  color: var(--mg-moss-dark);
+  font-weight: var(--mg-font-weight-bold);
+}

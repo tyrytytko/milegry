@@ -1,0 +1,8 @@
+/* Indeks stylów powłoki. Kolejność importów = kolejność kaskady (okna przed ekranami końca, które je nadpisują). */
+@import './hub.css';
+@import './hold.css';
+@import './frame.css';
+@import './sheet.css';
+@import './pickers.css';
+@import './endScreens.css';
+@import './parents.css';

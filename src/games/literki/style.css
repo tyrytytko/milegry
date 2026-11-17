@@ -1,0 +1,315 @@
+/* Spadające literki — style tylko tej gry (prefiks .g-literki). Kolory, czasy i kroje wyłącznie z tokenów.
+   Rozmiary w jednostkach kontenera: root gry ma container-type: size (cqw/cqh = 1% szerokości/wysokości sceny). */
+
+.g-literki {
+  --g-literki-ground: 0.14; /* wysokość ziemi / piasku (ułamek wysokości sceny) */
+  --g-literki-top: 0.02; /* górny brzeg toru (ułamek wysokości sceny) */
+  --g-literki-pad: 8px; /* obszar trafienia większy niż grafika */
+  --g-literki-card: clamp(80px, 15cqh, 120px); /* karta-wzór (dotyk) */
+  /* ≥ 80 px: nad przedmiotem przy górnej krawędzi (wylądowany bąbelek) mieści się klawisz-podpowiedź. */
+  --g-literki-track-top: max(80px, var(--g-literki-top) * 100cqh);
+}
+
+.g-literki[data-skin='kasztany'] {
+  --g-literki-top: 0.08;
+}
+
+.g-literki[data-skin='rybki'] {
+  --g-literki-ground: 0.1;
+  --g-literki-top: 0.04;
+}
+
+/* --- Scena: statyczne tło, dekoracje tylko na brzegach (Z-13) --- */
+.g-literki-scene {
+  position: absolute;
+  inset: 0;
+  background: var(--mg-scene-sky);
+}
+
+/* Dotyk: u góry karta-wzór, tor zaczyna się pod nią. */
+.g-literki-scene--card {
+  --g-literki-track-top: calc(var(--g-literki-card) + var(--mg-space-l));
+}
+
+.g-literki[data-skin='rybki'] .g-literki-scene {
+  background: var(--mg-scene-water);
+}
+
+.g-literki-ground {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(var(--g-literki-ground) * 100cqh);
+  background: var(--mg-scene-grass);
+  border-radius: 50% 50% 0 0 / var(--mg-radius-l) var(--mg-radius-l) 0 0;
+}
+
+.g-literki[data-skin='rybki'] .g-literki-ground {
+  background: var(--mg-scene-sand);
+}
+
+.g-literki[data-skin='kasztany'] .g-literki-ground {
+  background: var(--mg-scene-forest-floor);
+}
+
+.g-literki-decor {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* Dekoracje: małe, w rogach, stoją na ziemi (rysowanej wcześniej) w pasie pod torem
+   (tor kończy się na 60% wysokości ziemi) — nie nachodzą na przedmioty (Z-13). Drugie po prawej. */
+.g-literki-deco {
+  position: absolute;
+  left: var(--mg-space-s);
+  bottom: 0;
+  width: min(64px, 12cqw, var(--g-literki-ground) * 60cqh);
+  height: calc(var(--g-literki-ground) * 60cqh);
+}
+
+.g-literki-deco:nth-child(2) {
+  left: auto;
+  right: var(--mg-space-s);
+}
+
+/* Kasztany: dwie korony w górnych rogach, wysunięte poza scenę, nad torem (U10). Pień i cień drzewa
+   (dolne 26% rysunku) obcięte — korona „zwisa” zza krawędzi, zamiast wisieć w powietrzu z pniem. */
+.g-literki[data-skin='kasztany'] .g-literki-deco {
+  top: 0;
+  bottom: auto;
+  left: -5cqw;
+  /* Widać pas 20–74% wysokości (0,54 boku) — kończy się 6 px nad górnym brzegiem toru (Z-13). */
+  width: min(24cqw, (var(--g-literki-track-top) - 6px) / 0.54);
+  height: auto;
+  aspect-ratio: 1;
+  clip-path: inset(0 0 26% 0);
+  transform: translateY(-20%);
+}
+
+.g-literki[data-skin='kasztany'] .g-literki-deco:nth-child(2) {
+  left: auto;
+  right: -5cqw;
+}
+
+.g-literki-deco svg,
+.g-literki-sprite svg,
+.g-literki-hog svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* --- Karta-wzór trzymana przez jeżyka (dotyk; u góry sceny — Z-33) --- */
+.g-literki-model {
+  position: absolute;
+  top: var(--mg-space-s);
+  left: 50%;
+  display: flex;
+  align-items: flex-end;
+  transform: translateX(-50%);
+}
+
+.g-literki-hog {
+  width: calc(var(--g-literki-card) * 0.9);
+  height: calc(var(--g-literki-card) * 0.9);
+  margin-right: calc(var(--g-literki-card) * -0.12);
+}
+
+.g-literki-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--g-literki-card);
+  height: var(--g-literki-card);
+  border: 3px solid var(--mg-sand);
+  border-radius: var(--mg-radius);
+  background: var(--mg-surface);
+  box-shadow: var(--mg-shadow-soft);
+  font-size: calc(var(--g-literki-card) * 0.52);
+}
+
+.g-literki-card:empty {
+  opacity: 0.6;
+}
+
+/* --- Tor i przedmioty --- */
+.g-literki-track {
+  /* Rozmiar przedmiotu: mieści się w torze z odstępem ≥ 16 px między obszarami trafienia (Z-33). */
+  --g-literki-size: min(
+    160px,
+    (100cqw - 2 * var(--mg-space-s)) / var(--lanes) - var(--mg-touch-gap) - 2 * var(--g-literki-pad),
+    (100cqh - var(--g-literki-track-top) - var(--g-literki-ground) * 60cqh) * 0.32
+  );
+  position: absolute;
+  left: var(--mg-space-s);
+  right: var(--mg-space-s);
+  top: var(--g-literki-track-top);
+  bottom: calc(var(--g-literki-ground) * 60cqh);
+}
+
+.g-literki-item {
+  position: absolute;
+  width: var(--g-literki-size);
+  height: var(--g-literki-size);
+  left: calc((var(--lane) + 0.5) / var(--lanes) * 100% - var(--g-literki-size) / 2);
+  top: calc(var(--p, 0) * (100% - var(--g-literki-size)));
+  cursor: pointer;
+  animation: g-literki-appear var(--mg-dur-slow) var(--mg-ease) both;
+}
+
+.g-literki-item::before {
+  content: '';
+  position: absolute;
+  inset: calc(-1 * var(--g-literki-pad));
+}
+
+.g-literki-sprite {
+  position: absolute;
+  inset: 0;
+}
+
+/* Litera na przedmiocie — duża, atramentem na jasnym tle (Z-14). */
+.g-literki-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 12%;
+  font-size: calc(var(--g-literki-size) * 0.48);
+  pointer-events: none;
+}
+
+.g-literki-scene--rises .g-literki-face {
+  padding-top: 0;
+}
+
+/* Łupina kasztana jest ciemna — litera na jasnym kółku. */
+.g-literki[data-skin='kasztany'] .g-literki-item:not(.g-literki-item--open) .g-literki-face {
+  inset: 26% 20% 12% 20%;
+  padding: 0;
+  border-radius: var(--mg-radius-round);
+  background: var(--mg-surface);
+  font-size: calc(var(--g-literki-size) * 0.38);
+}
+
+/* Po otwarciu litera przechodzi na plakietkę pod zwierzątkiem; chwilę widać obie formy naraz. */
+.g-literki-item--open .g-literki-face {
+  inset: auto 0 -30% 0;
+  height: 0.95em;
+  padding: 0 0.2em;
+  margin: 0 auto;
+  width: fit-content;
+  min-width: 1.1em;
+  gap: 0.15em;
+  border-radius: var(--mg-radius-round);
+  background: var(--mg-surface);
+  box-shadow: var(--mg-shadow-soft);
+  font-size: calc(var(--g-literki-size) * 0.3);
+  overflow: visible;
+}
+
+.g-literki-item--open .g-literki-sprite {
+  animation: g-literki-hatch var(--mg-dur-base) var(--mg-ease) both;
+}
+
+.g-literki-letter-in {
+  animation: g-literki-fade-in var(--mg-dur-base) var(--mg-ease) both;
+}
+
+.g-literki-letter-out {
+  animation: g-literki-fade-out var(--mg-dur-slow) var(--mg-ease) both;
+}
+
+/* Podpowiedź w trybie „pisane”: mała drukowana litera obok. */
+.g-literki-printhint {
+  position: absolute;
+  right: -16%;
+  top: -10%;
+  padding: 0.05em 0.3em;
+  border-radius: var(--mg-radius-s);
+  background: var(--mg-surface);
+  box-shadow: var(--mg-shadow-soft);
+  font-size: calc(var(--g-literki-size) * 0.22);
+  animation: g-literki-fade-in var(--mg-dur-base) var(--mg-ease) both;
+}
+
+/* Odejście zwierzątka (≤ 800 ms), inne dla każdej skórki; element usuwa game.ts po animationend. */
+.g-literki-item--leaving {
+  animation: g-literki-leave-hop var(--mg-dur-slow) var(--mg-ease) forwards;
+  pointer-events: none;
+}
+
+.g-literki[data-skin='rybki'] .g-literki-item--leaving {
+  animation-name: g-literki-leave-swim;
+}
+
+.g-literki[data-skin='kasztany'] .g-literki-item--leaving {
+  animation-name: g-literki-leave-roll;
+}
+
+@keyframes g-literki-appear {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes g-literki-hatch {
+  from {
+    opacity: 0.4;
+    transform: scale(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes g-literki-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes g-literki-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes g-literki-leave-hop {
+  to {
+    opacity: 0;
+    transform: translateY(-40px);
+  }
+}
+
+@keyframes g-literki-leave-swim {
+  to {
+    opacity: 0;
+    transform: translateX(80px);
+  }
+}
+
+@keyframes g-literki-leave-roll {
+  to {
+    opacity: 0;
+    transform: translateX(80px) rotate(120deg);
+  }
+}
+
+/* Z-05: ruch zastąpiony przenikaniem (opadanie wyłącza logika: przedmiot od razu stoi na końcu toru). */
+@media (prefers-reduced-motion: reduce) {
+  .g-literki-item--open .g-literki-sprite {
+    animation-name: g-literki-fade-in;
+  }
+  .g-literki-item--leaving,
+  .g-literki[data-skin='rybki'] .g-literki-item--leaving,
+  .g-literki[data-skin='kasztany'] .g-literki-item--leaving {
+    animation-name: g-literki-fade-out;
+  }
+}

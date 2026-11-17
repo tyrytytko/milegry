@@ -1,0 +1,99 @@
+/*
+ * „Taki sam kształt” — style tylko tej gry (prefiks .g-wzor). Kolory, czasy i promienie wyłącznie z tokenów (--mg-…).
+ * Rozmiary w jednostkach kontenera (cqw/cqh): root gry ma container-type: size, więc scena skaluje się z ramką
+ * w pionie i w poziomie (Z-34), a minimum --mg-touch-min pilnuje celów dotykowych (Z-33).
+ */
+
+/* --- Scena: stała przez całą rundę (Z-02) — tło i układ się nie animują; przenikaniem wchodzi tylko treść zadania --- */
+.g-wzor-scene {
+  /* Bok karty: mniejsza z wartości 26% szerokości i 22% wysokości sceny, nie mniej niż cel dotykowy (Z-33). */
+  --g-wzor-card: max(var(--mg-touch-min), min(26cqw, 22cqh));
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: max(var(--mg-space-l), 6cqh);
+  padding-bottom: var(--mg-edge-safe); /* nic interaktywnego przy dolnej krawędzi (Z-33) */
+  background: var(--mg-scene-sky);
+}
+
+.g-wzor[data-skin='woda'] .g-wzor-scene {
+  background: var(--mg-scene-water);
+}
+
+/* Poziomo (Z-34): wzór po lewej, karty po prawej — przy niskiej scenie 2 × 2 karty nie wychodzą poza ekran. */
+@container (min-aspect-ratio: 1/1) {
+  .g-wzor-scene {
+    --g-wzor-card: max(var(--mg-touch-min), min(20cqw, 34cqh));
+    flex-direction: row;
+    gap: max(var(--mg-space-xl), 8cqw);
+  }
+}
+
+@keyframes g-wzor-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* --- Wzór (pytanie) i karty do wyboru; position: relative, bo rdzeń kotwiczy przy nich podpowiedzi --- */
+.g-wzor-question {
+  position: relative;
+  width: calc(var(--g-wzor-card) * 1.3);
+  height: calc(var(--g-wzor-card) * 1.3); /* jawna wysokość: SVG (height: 100%) ma wypełnić kafelek */
+  padding: calc(var(--g-wzor-card) * 0.12); /* nie w %: procenty paddingu liczą się od szerokości sceny */
+  border-radius: var(--mg-radius-l);
+  background: var(--mg-surface);
+  box-shadow: var(--mg-shadow-soft);
+}
+
+.g-wzor-choices {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: var(--g-wzor-card);
+  grid-auto-rows: var(--g-wzor-card);
+  gap: var(--mg-touch-gap);
+}
+
+/* Cztery karty układamy 2 × 2, żeby w pionie na telefonie mieściły się z odstępem ≥ 16 px. */
+.g-wzor-choices[data-count='4'] {
+  grid-auto-flow: row;
+  grid-template-columns: repeat(2, var(--g-wzor-card));
+}
+
+.g-wzor-card {
+  position: relative;
+  padding: 10%;
+  border: 3px solid var(--mg-sand);
+  border-radius: var(--mg-radius);
+  background: var(--mg-surface);
+  box-shadow: var(--mg-shadow-soft);
+  cursor: pointer;
+  transition: background-color var(--mg-dur-base) var(--mg-ease);
+}
+
+/* Reakcja na rozwiązanie: karta spokojnie zmienia tło na „dobrze” (Z-20). Ramkę fokusu rysuje rdzeń. */
+.g-wzor-card.g-wzor-solved {
+  background: var(--mg-sage-light);
+  border-color: var(--mg-moss);
+}
+
+/* Kształty: wszystkie w jednym kolorze — dopasowuje się je kształtem, nie kolorem (Z-15).
+   Nowy kształt zadania wchodzi przenikaniem; tło i kafelek wzoru stoją. Animacja jest na SVG, nie na
+   karcie: `animation` na karcie przykryłaby kołysanie z rdzenia (klasa mg-wobble). */
+.g-wzor-question svg,
+.g-wzor-card svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: var(--mg-honey);
+  stroke: var(--mg-ink);
+  stroke-width: 3;
+  stroke-linejoin: round;
+  animation: g-wzor-in var(--mg-dur-base) var(--mg-ease) both;
+}

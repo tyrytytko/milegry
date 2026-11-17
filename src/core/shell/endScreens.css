@@ -1,0 +1,153 @@
+/* Ekrany końca rundy i sesji (endScreens.ts). */
+
+.mg-sheet__panel--complete,
+.mg-sheet__panel--sleep {
+  overflow: hidden;
+  text-align: center;
+  background: color-mix(in srgb, var(--mg-sage-light) 35%, var(--mg-surface));
+}
+
+/* Dziecko nie czyta: tytuł tylko dla czytników ekranu. */
+.mg-sheet__panel--complete .mg-sheet__title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.mg-complete,
+.mg-sleep {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mg-space-l);
+}
+
+.mg-complete__hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: var(--mg-space);
+  min-height: 130px;
+}
+
+.mg-complete__hog {
+  animation: mg-fade-in var(--mg-dur-slow) var(--mg-ease) both;
+}
+
+.mg-complete__buddy {
+  width: 96px;
+  height: 96px;
+  animation: mg-buddy-hop var(--mg-dur-reward) var(--mg-ease) var(--mg-dur-fast) 1 both;
+}
+
+.mg-complete__buddy svg {
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes mg-buddy-hop {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  55% {
+    transform: translateY(-10px);
+  }
+  80%,
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mg-complete__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--mg-touch-gap);
+}
+
+.mg-bigicon {
+  width: 96px;
+  height: 96px;
+  padding: 0;
+  border-radius: var(--mg-radius-l);
+}
+
+.mg-bigicon svg {
+  width: 52px;
+  height: 52px;
+}
+
+@media (max-width: 420px) {
+  .mg-bigicon {
+    width: 88px;
+    height: 88px;
+  }
+}
+
+@media (max-height: 480px) {
+  .mg-complete,
+  .mg-sleep {
+    gap: var(--mg-space);
+  }
+  .mg-complete__hero {
+    min-height: 0;
+  }
+}
+
+.mg-complete__leaves {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Jednorazowo; opóźnienie z kodu ≤ 0,5 s + czas nagrody = ≤ 1,5 s (Z-04); w kodzie 6 liści (≤ 12). */
+.mg-complete__leaf {
+  position: absolute;
+  top: -40px;
+  left: var(--x);
+  width: 28px;
+  height: 28px;
+  opacity: 0;
+  animation: mg-leaf-fall var(--mg-dur-reward) var(--mg-ease) var(--delay) 1 forwards;
+}
+
+@keyframes mg-leaf-fall {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) rotate(0deg);
+  }
+  20% {
+    opacity: 0.85;
+  }
+  80% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(12px, 260px) rotate(80deg);
+  }
+}
+
+.mg-sleep__note {
+  color: var(--mg-ink-soft);
+  font-size: var(--mg-font-size-s);
+  max-width: 34ch;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mg-complete__buddy {
+    animation-name: mg-fade-in;
+  }
+  .mg-complete__leaves {
+    display: none;
+  }
+}

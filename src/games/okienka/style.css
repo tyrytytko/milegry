@@ -1,0 +1,156 @@
+/*
+ * „Kształtowe okienka” — style tylko tej gry (prefiks .g-okienka). Kolory, czasy i promienie wyłącznie z tokenów.
+ * Rozmiary w jednostkach kontenera (cqw/cqh) z progiem --mg-touch-min (Z-33); układ poziomy przez @container (Z-34).
+ * Wszystkie okienka mają ten sam kolor, okiennica też jeden — dopasowuje się wyłącznie kształtem (Z-15).
+ */
+
+.g-okienka-scene {
+  /* Bok okienka i okiennicy (ten sam — okiennica „pasuje” do okienka). */
+  --g-okienka-win: max(var(--mg-touch-min), min(24cqw, 17cqh));
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: max(var(--mg-space-l), 4cqh);
+  padding-bottom: var(--mg-edge-safe); /* nic klikalnego przy dolnej krawędzi (Z-33) */
+  background: var(--mg-scene-sky);
+}
+
+/* --- Domek: dach + ściana z okienkami. Stoi w miejscu przez całą rundę (Z-02). --- */
+.g-okienka-house {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.g-okienka-roof {
+  width: calc(100% + var(--mg-space-xl));
+  height: calc(var(--g-okienka-win) * 0.5);
+  background: color-mix(in srgb, var(--mg-chestnut) 55%, var(--mg-sand));
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.g-okienka-wall {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: var(--g-okienka-win);
+  grid-auto-rows: var(--g-okienka-win);
+  gap: var(--mg-touch-gap);
+  padding: var(--mg-space);
+  border-radius: 0 0 var(--mg-radius) var(--mg-radius);
+  background: var(--mg-scene-forest-floor);
+  box-shadow: var(--mg-shadow-soft);
+}
+
+/* Dwa okienka w rzędzie albo cztery 2 × 2 (w pionie na telefonie, z odstępem ≥ 16 px) — mogą być większe niż trzy w rzędzie. */
+.g-okienka-scene:is([data-count='2'], [data-count='4']) {
+  --g-okienka-win: max(var(--mg-touch-min), min(32cqw, 20cqh));
+}
+
+.g-okienka-scene[data-count='4'] .g-okienka-wall {
+  grid-auto-flow: row;
+  grid-template-columns: repeat(2, var(--g-okienka-win));
+}
+
+/* --- Okienko (element wyboru) i okiennica (pytanie): position: relative — rdzeń kotwiczy przy nich podpowiedzi --- */
+.g-okienka-window,
+.g-okienka-shutter {
+  position: relative;
+  width: var(--g-okienka-win);
+  height: var(--g-okienka-win);
+  padding: 6%;
+}
+
+.g-okienka-window {
+  border: 0;
+  border-radius: var(--mg-radius-s);
+  background: transparent;
+  cursor: pointer;
+}
+
+.g-okienka-window svg,
+.g-okienka-shutter svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  stroke: var(--mg-ink);
+  stroke-width: 4;
+  stroke-linejoin: round;
+  animation: g-okienka-in var(--mg-dur-base) var(--mg-ease) both; /* nowa treść zadania wchodzi przenikaniem */
+}
+
+/* Okienko = szybka w ramie: jasna mgła z ciemnym konturem. */
+.g-okienka-window svg {
+  fill: var(--mg-mist);
+  transition: fill var(--mg-dur-base) var(--mg-ease);
+}
+
+/* Okiennica = deska w kolorze miodu, na jasnym kafelku. */
+.g-okienka-shutter {
+  border-radius: var(--mg-radius);
+  background: var(--mg-surface);
+  box-shadow: var(--mg-shadow-soft);
+  transition: opacity var(--mg-dur-base) var(--mg-ease);
+}
+
+.g-okienka-shutter svg {
+  fill: var(--mg-honey);
+}
+
+/* Rozwiązanie (Z-20): okiennica „wchodzi” w pasujące okienko — okienko przyjmuje jej kolor, kafelek pustoszeje. */
+.g-okienka-window.g-okienka-closed svg {
+  fill: var(--mg-honey);
+}
+
+.g-okienka-shutter.g-okienka-used {
+  opacity: 0.35;
+}
+
+/* --- Podwórko: wiewiórka trzyma okiennicę --- */
+.g-okienka-yard {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--mg-space);
+}
+
+.g-okienka-squirrel {
+  width: calc(var(--g-okienka-win) * 0.8);
+  height: calc(var(--g-okienka-win) * 0.8);
+}
+
+.g-okienka-squirrel svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Poziomo (Z-34): domek po lewej, okienka w jednym rzędzie; podwórko po prawej. */
+@container (min-aspect-ratio: 1/1) {
+  .g-okienka-scene,
+  .g-okienka-scene[data-count] {
+    --g-okienka-win: max(var(--mg-touch-min), min(14cqw, 36cqh));
+    flex-direction: row;
+    gap: max(var(--mg-space-xl), 5cqw);
+  }
+
+  .g-okienka-scene[data-count='4'] .g-okienka-wall {
+    grid-auto-flow: column;
+    grid-template-columns: none;
+  }
+
+  .g-okienka-yard {
+    flex-direction: column-reverse;
+    align-items: center;
+  }
+}
+
+@keyframes g-okienka-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

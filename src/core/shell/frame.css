@@ -1,0 +1,192 @@
+/* Ramka gry: pasek, scena, pas kontrolek, ładowanie, błąd, pauza. */
+
+html.mg-in-game,
+html.mg-in-game body {
+  overflow: hidden;
+  height: 100%;
+}
+
+.mg-frame {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas: 'bar' 'stage' 'dock';
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  /* Bezpieczne marginesy (tokens.css, --mg-safe-*): pasek, scena i pas kontrolek leżą poza wycięciem
+     aparatu i zaokrąglonymi rogami; ich własne odstępy dochodzą do tego. Bez wycięcia wszystkie są 0. */
+  padding: var(--mg-safe-top) var(--mg-safe-right) var(--mg-safe-bottom) var(--mg-safe-left);
+  /* Kontener zapytań: wymiary jego treści to ekran bez marginesów, więc progi zależne od miejsca na ramkę
+     (@container mg-frame — tu i w ui.css) liczą się z wysokości użytecznej, a nie z wysokości okna. Wielkość
+     ramki nie zależy od treści (100dvh), więc containment niczego nie zmienia w jej układzie — wysokość ramki
+     musi taka zostać. Okna (sheet, position: fixed) dołączane do ramki zajmują jej obszar = cały ekran. */
+  container: mg-frame / size;
+}
+
+.mg-bar {
+  grid-area: bar;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--mg-touch-gap);
+  padding: var(--mg-space-s) var(--mg-space);
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.mg-bar__home,
+.mg-bar__level,
+.mg-bar__skin {
+  flex: none;
+}
+
+.mg-bar__title {
+  font-size: var(--mg-font-size-l);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mg-bar__spacer {
+  flex: 1;
+}
+
+.mg-bar__level,
+.mg-bar__skin {
+  padding: var(--mg-space-xs) var(--mg-space);
+}
+
+.mg-bar__level-num {
+  font-size: var(--mg-font-size-l);
+  min-width: 1.2em;
+}
+
+.mg-bar__skin svg {
+  width: 44px;
+  height: 44px;
+}
+
+@media (max-width: 560px) {
+  .mg-bar__title {
+    display: none;
+  }
+  .mg-bar {
+    padding: var(--mg-space-s) 12px;
+  }
+}
+
+.mg-stage {
+  grid-area: stage;
+  position: relative;
+  margin: 0 var(--mg-space) var(--mg-space);
+  border-radius: var(--mg-radius-l);
+  overflow: hidden;
+  background: var(--mg-surface);
+  box-shadow: var(--mg-shadow-soft);
+  min-height: 0;
+}
+
+.mg-game-root {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  container-type: size;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Pas kontrolek (numPad, dPad, letterKeys): w pionie pod sceną, ale z bezpiecznym pasem przy dolnej
+   krawędzi; w poziomie po prawej stronie sceny (Z-33: nic interaktywnego przy dolnej krawędzi). */
+.mg-dock {
+  grid-area: dock;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mg-touch-gap);
+  padding: 0 12px var(--mg-edge-safe);
+}
+
+.mg-dock:empty {
+  display: none;
+}
+
+@media (min-aspect-ratio: 1/1) {
+  .mg-frame:has(.mg-dock:not(:empty)) {
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto 1fr;
+    grid-template-areas: 'bar bar' 'stage dock';
+  }
+  .mg-dock {
+    flex-direction: column;
+    padding: 0 var(--mg-space) var(--mg-edge-safe) 0;
+    max-width: 50vw;
+  }
+}
+
+/* Niski ekran poziomo (telefon): pas pod paskiem zostawiłby kontrolkom ~240 px, a dPad ma 272 px,
+   klawiatura 0–9 — 368 px. Pas zajmuje więc całą wysokość, a pasek tylko kolumnę sceny (bez tytułu,
+   żeby się nie zawijał). Szerokość pasa: 4 kolumny klawiatury numerycznej (ui.css, ten sam próg). */
+@media (min-aspect-ratio: 1/1) and (max-height: 520px) {
+  .mg-frame:has(.mg-dock:not(:empty)) {
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas: 'bar dock' 'stage dock';
+  }
+  .mg-frame:has(.mg-dock:not(:empty)) .mg-bar__title {
+    display: none;
+  }
+  .mg-dock {
+    max-width: calc(4 * var(--mg-touch-min) + 3 * var(--mg-touch-gap) + var(--mg-space));
+  }
+  /* Wąski ekran (szerokość użyteczna, czyli bez bezpiecznych marginesów, poniżej 640 px — np. 667 × 375 z wycięciem
+     po bokach): przy pasie 384 px pasek gry się zawija, a scena jest za mała na treść. Klawiatura numeryczna ma tu
+     zwarte klawisze 64 px (ui.css, ten sam próg), więc pas ma 4 × 64 + 3 × 8 + odstęp = 296 px. */
+  @container mg-frame (max-width: 639.98px) {
+    .mg-dock:has(.mg-numpad) {
+      max-width: calc(4 * 64px + 3 * 8px + var(--mg-space));
+    }
+  }
+}
+
+/* Mały telefon w pionie: klawiatura numeryczna ma 5 klawiszy w rzędzie (ui.css, ten sam próg) = 352 px,
+   więc pas kontrolek traci boczne wcięcie (na 360 px zostaje 4 px z każdej strony). Próg liczony z miejsca
+   w ramce bez bezpiecznych marginesów (kontener mg-frame), np. 375 × 812 z wycięciem 47/34 = 375 × 731. */
+@container mg-frame (max-aspect-ratio: 99/100) and (max-height: 760px) and (min-width: 360px) {
+  .mg-dock {
+    padding-inline: 4px;
+  }
+}
+
+.mg-loading,
+.mg-error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mg-space);
+  text-align: center;
+  padding: var(--mg-space);
+}
+
+/* Pauza po utracie fokusu okna: spokojna plansza ze śpiącym jeżykiem. */
+.mg-pause {
+  position: absolute;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--mg-bg) 85%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--mg-dur-slow) var(--mg-ease);
+}
+
+.mg-frame--paused .mg-pause {
+  opacity: 1;
+}

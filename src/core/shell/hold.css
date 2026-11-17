@@ -1,0 +1,76 @@
+/* Przycisk „przytrzymaj” (pierścień postępu): domek w ramce gry i „Dla rodziców” w hubie.
+   Postęp 0..1 ustawia holdButton.ts w zmiennej --mg-hold-p na przycisku. */
+
+.mg-hold {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--mg-frame-btn);
+  min-height: var(--mg-frame-btn);
+  padding: 0;
+  border: none;
+  border-radius: var(--mg-radius-round);
+  background: var(--mg-sand);
+  color: var(--mg-ink);
+  box-shadow: var(--mg-shadow-soft);
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.mg-hold__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: conic-gradient(var(--mg-moss-dark) calc(var(--mg-hold-p, 0) * 1turn), transparent 0);
+}
+
+.mg-hold__content {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mg-space-s);
+  margin: 6px;
+  min-width: calc(var(--mg-frame-btn) - 12px);
+  min-height: calc(var(--mg-frame-btn) - 12px);
+  padding: 0 var(--mg-space-s);
+  border-radius: inherit;
+  background: var(--mg-surface);
+  font-weight: var(--mg-font-weight-bold);
+}
+
+.mg-hold__content svg {
+  width: 32px;
+  height: 32px;
+}
+
+.mg-hold__tip {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 2px 10px;
+  border-radius: var(--mg-radius-round);
+  background: var(--mg-ink);
+  color: var(--mg-surface);
+  font-size: var(--mg-font-size-s);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--mg-dur-base) var(--mg-ease);
+  z-index: 5;
+}
+
+.mg-hold--tip .mg-hold__tip {
+  opacity: 1;
+}
+
+/* Domek stoi przy lewej krawędzi: dymek zaczyna się równo z nim, nie wychodzi poza ekran (U6). */
+.mg-bar__home .mg-hold__tip {
+  left: 0;
+  transform: none;
+}
