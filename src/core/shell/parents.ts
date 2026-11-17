@@ -267,7 +267,7 @@ function renderPanel(container: HTMLElement, app: App): void {
         section(
           'Czas przed ekranem',
           hint(
-            'WHO i Amerykańska Akademia Pediatrii zalecają, by dzieci w wieku 2–\u20605\u00a0lat spędzały przed ekranem najwyżej godzinę dziennie — najlepiej razem z dorosłym. Grajcie wspólnie i rozmawiajcie o tym, co widać na ekranie.',
+            'WHO zaleca, by dzieci w wieku 2–\u20604\u00a0lat spędzały przed ekranem na siedząco najwyżej godzinę dziennie — im mniej, tym lepiej. Grajcie wspólnie i rozmawiajcie o tym, co widać na ekranie.',
           ),
         ),
         section(
