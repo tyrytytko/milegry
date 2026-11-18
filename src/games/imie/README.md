@@ -93,8 +93,9 @@ tylko wyróżnieniem litery wzoru.
   gdy rdzeń trzyma w nim podpowiedź (`:has(.mg-hint)`); wraca cały wzór, nie tylko bieżąca litera. Na klawiaturze
   klawisz-podpowiedź z bezczynności staje nad literą wzoru, więc też go odsłania. Na dotyku podpowiedź
   z bezczynności stoi przy przycisku (poza sceną), więc sama bezczynność wzoru nie odsłania — dopiero 1. błąd.
-- Na dotyku na poziomie 4 podpowiedź z bezczynności (paluszek przy właściwym przycisku) przychodzi mniej więcej
-  wtedy, gdy wzór gaśnie — dziecko, które czeka, widzi puste kratki i paluszek wskazujący odpowiedź.
+- Na dotyku na poziomie 4 wzór gaśnie wcześniej, niż przychodzi podpowiedź z bezczynności (paluszek przy właściwym
+  przycisku; czas ustawia rodzic w panelu, może ją też wyłączyć) — dziecko, które czeka, widzi do tej chwili puste
+  kratki, a potem paluszek wskazujący odpowiedź.
 - Klawisz-podpowiedź (60 px) stoi nad literą wzoru; w 1. rzędzie ma na to miejsce (`--top: 68px`), w dalszych
   rzędach długiego imienia przy małych kratkach zachodzi na rząd wyżej (już przepisany), nie na bieżący wzór
   ani kratkę.
