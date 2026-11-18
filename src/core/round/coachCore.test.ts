@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { createClock, type ClockController } from '../clock';
-import { createCoachCore, FIRST_IDLE_MS, IDLE_MS, LOCK_MS, type CoachCore, type CoachView } from './coachCore';
+import { createCoachCore, FIRST_IDLE_PART, LOCK_MS, type CoachCore, type CoachView } from './coachCore';
+
+const IDLE_MS = 6000;
+const FIRST_IDLE_MS = IDLE_MS * FIRST_IDLE_PART;
 
 interface T {
   key: string;
@@ -20,7 +23,7 @@ const cues = () => view.show.mock.calls.map(([cue]) => cue);
 beforeEach(() => {
   clock = createClock(1);
   view = { show: vi.fn<CoachView<T>['show']>(), hide: vi.fn<CoachView<T>['hide']>() };
-  core = createCoachCore<T>(clock, view);
+  core = createCoachCore<T>(clock, view, IDLE_MS);
 });
 
 describe('bezczynność', () => {
@@ -100,6 +103,37 @@ describe('bezczynność', () => {
     advance(IDLE_MS * 2);
     expect(view.show).not.toHaveBeenCalled();
     expect(core.miss()).toBe('ignored');
+  });
+
+  it('dłuższy czas bezczynności: pierwsze zadanie czeka jego część, kolejne cały', () => {
+    core = createCoachCore<T>(clock, view, 20_000);
+    core.setTask({ key: 'a' });
+    advance(20_000 * FIRST_IDLE_PART - 50);
+    expect(view.show).not.toHaveBeenCalled();
+    advance(50);
+    expect(cues()).toEqual(['hint']);
+    core.setTask({ key: 'b' });
+    advance(20_000 - 50);
+    expect(cues()).toEqual(['hint']);
+    advance(50);
+    expect(cues()).toEqual(['hint', 'hint']);
+  });
+
+  it('bezczynność wyłączona (null): podpowiedź nie przychodzi sama, drabina po błędach działa', () => {
+    core = createCoachCore<T>(clock, view, null);
+    core.setTask({ key: 'a' });
+    advance(60_000);
+    core.activity();
+    core.setTask({ key: 'b' });
+    advance(60_000);
+    expect(view.show).not.toHaveBeenCalled();
+    expect(core.miss()).toBe('glow');
+    advance(60_000);
+    expect(cues()).toEqual(['glow']);
+    expect(core.miss()).toBe('hint');
+    expect(cues()).toEqual(['glow', 'hint']);
+    advance(LOCK_MS);
+    expect(core.miss()).toBe('together');
   });
 });
 

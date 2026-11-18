@@ -106,6 +106,26 @@ function renderPanel(container: HTMLElement, app: App): void {
     ),
   );
 
+  // --- Podpowiedzi z bezczynności (drabina po błędach działa zawsze — Z-19) ---
+  const hints = section(
+    'Podpowiedzi',
+    hint(
+      'Gdy dziecko nic nie robi, gra po chwili sama pokazuje, co zrobić. Na początku rundy czeka o połowę krócej. ' +
+        'Podpowiedzi po pomyłkach działają zawsze.',
+    ),
+    choiceGroup<Settings['hintDelay']>(
+      'Podpowiedź, gdy dziecko nic nie robi',
+      [
+        { value: 'short', label: 'Po 6 s' },
+        { value: 'medium', label: 'Po 12 s' },
+        { value: 'long', label: 'Po 20 s' },
+        { value: 'off', label: 'Wyłączone' },
+      ],
+      s.hintDelay,
+      (v) => set({ hintDelay: v }),
+    ),
+  );
+
   // --- Sterowanie ---
   const detected = app.detectedMode() === 'touch' ? 'dotyk' : 'klawiatura';
   const control = section(
@@ -275,6 +295,7 @@ function renderPanel(container: HTMLElement, app: App): void {
         age,
         sound,
         tempo,
+        hints,
         control,
         letters,
         name,

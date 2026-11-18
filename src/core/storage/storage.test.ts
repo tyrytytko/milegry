@@ -228,6 +228,18 @@ describe('settings', () => {
     expect(load({ effectsVolume: 0.6 }).effectsVolume).toBe(0.6);
   });
 
+  it('podpowiedzi z bezczynności: brak pola i wartość spoza listy dają „medium”, zapisane „off” wraca', () => {
+    const store = createStore(createMemoryStorage());
+    store.set('settings', { tempo: 'medium' });
+    expect(loadSettings(store).hintDelay).toBe('medium');
+    for (const junk of ['fast', 12, null, false]) {
+      store.set('settings', { hintDelay: junk });
+      expect(loadSettings(store).hintDelay).toBe('medium');
+    }
+    saveSettings(store, { ...DEFAULT_SETTINGS, hintDelay: 'off' });
+    expect(loadSettings(store).hintDelay).toBe('off');
+  });
+
   it('wiek dziecka: brak pola i wartość spoza listy dają „3–5”, zapisane „5–7” wraca jako „5–7”', () => {
     const store = createStore(createMemoryStorage());
     store.set('settings', { tempo: 'medium' });

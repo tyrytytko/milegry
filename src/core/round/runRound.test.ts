@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { GameContext, InputMode, Tempo } from '../types';
-import { IDLE_MS, LOCK_MS } from './coachCore';
+import { IDLE_MS } from './coach';
+import { LOCK_MS } from './coachCore';
 import { fakeCtx, fakeEl, flush, hintsIn } from './fakeCtx';
 import type { RoundSpec, TaskView } from './index';
 import { NEXT_TASK_MS, runRound } from './runRound';
@@ -349,7 +350,7 @@ describe('runRound — cyfry i litera', () => {
     expect(r.ui.numPad.mock.results[0]!.value.destroyed).toBe(true);
     expect(r.ui.numPad).toHaveBeenLastCalledWith({ digits: [1, 2, 3], erase: true });
     const keys = r.ui.numPad.mock.results[1]!.value.el.children;
-    r.advance(IDLE_MS); // bezczynność → podpowiedź pierwszej cyfry
+    r.advance(IDLE_MS.medium); // bezczynność → podpowiedź pierwszej cyfry
     expect(r.ui.hint).toHaveBeenLastCalledWith({ target: keys[1], key: '2' });
     r.emit({ type: 'digit', value: 2 });
     expect(r.ui.hint).toHaveBeenLastCalledWith({ target: keys[0], key: '1' }); // podpowiedź idzie za kodem

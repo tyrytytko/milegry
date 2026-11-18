@@ -155,6 +155,12 @@ Wszystko działa w ciszy i na czasie gry; logika trenera jest czysta (`coachCore
 zadaniami, blokada po błędzie, bezczynność) są w `coach.ts` i `coachCore.ts`; testy rundy używają atrapy `ctx`
 z `fakeCtx.ts`.
 
+Czas bezczynności wybiera rodzic w panelu (`Settings.hintDelay`: 6, 12 albo 20 s, domyślnie 12 s, albo
+wyłączone), jedno ustawienie dla wszystkich gier — dziecko ma zdążyć obejrzeć zadanie, zanim gra je podpowie.
+To sekundy rzeczywiste: `coach.ts` przelicza je przez tempo, żeby napis w panelu był prawdziwy przy każdym
+tempie. Na pierwszym zadaniu rundy, zanim dziecko cokolwiek zrobi, trener czeka połowę wybranego czasu.
+Wyłączenie dotyczy tylko bezczynności; drabina po błędach działa zawsze, więc dziecko nie utknie.
+
 Wybór 1 z N przyjmuje klawisz litery tylko wtedy, gdy gra poda literę każdego elementu (`letters` w `ChooseView`),
 bo mapowanie elementów na klawisze wolno robić tylko tam, gdzie litera jest treścią zadania (Z-32). Klawisz litery
 idzie wtedy do tej samej oceny co stuknięcie i Spacja, więc blokada po błędzie, pauza między zadaniami i drabina

@@ -20,10 +20,19 @@ export const FINISH_FALLBACK_MS = 4000;
  */
 export const NEXT_TASK_MS = 1000;
 
+/**
+ * Bezczynność, po której przychodzi podpowiedź obrazem, dla stopni z panelu rodzica (`HintDelay`;
+ * 'off' = wcale). Czas rzeczywisty: rodzic wybiera sekundy, więc tempo gry ich nie zmienia.
+ */
+export const IDLE_MS = { short: 6000, medium: 12_000, long: 20_000 } as const;
+
 export function createCoach(ctx: GameContext): Coach {
   let glow: Hint | null = null;
   let hint: Hint | null = null;
   let destroyed = false;
+
+  const { hintDelay, tempo } = ctx.settings;
+  const idleMs = hintDelay === 'off' ? null : IDLE_MS[hintDelay] * TEMPO_SCALE[tempo];
 
   const core = createCoachCore<CoachTask>(ctx.clock, {
     show(cue, task) {
@@ -36,7 +45,7 @@ export function createCoach(ctx: GameContext): Coach {
       glow = null;
       hint = null;
     },
-  });
+  }, idleMs);
 
   // Każda intencja dziecka (także ruch strzałką) to „działanie” — zeruje licznik bezczynności.
   const stopListening = ctx.input.on(() => core.activity());

@@ -5,7 +5,7 @@
  */
 import { vi } from 'vitest';
 import { createClock, TEMPO_SCALE } from '../clock';
-import type { FocusGridOptions, GameContext, HintOptions, InputMode, Intent, Tempo } from '../types';
+import type { FocusGridOptions, GameContext, HintDelay, HintOptions, InputMode, Intent, Tempo } from '../types';
 
 /** Najprostszy „element”: atrybuty, rodzic, dzieci i tekst (tyle używa h() i rdzeń rundy). */
 class FakeNode {
@@ -80,7 +80,7 @@ function fakeControl(labels: string[]) {
   return control;
 }
 
-export function fakeCtx(mode: InputMode = 'keyboard', tempo: Tempo = 'medium') {
+export function fakeCtx(mode: InputMode = 'keyboard', tempo: Tempo = 'medium', hintDelay: HintDelay = 'medium') {
   // h() z core/util/dom tworzy elementy przez document — w testach (środowisko node) to atrapa.
   vi.stubGlobal('document', { createElement: () => new FakeNode() });
   const clock = createClock(TEMPO_SCALE[tempo]);
@@ -121,7 +121,7 @@ export function fakeCtx(mode: InputMode = 'keyboard', tempo: Tempo = 'medium') {
   const ctx = {
     root: fakeEl(),
     level: 1,
-    settings: { tempo },
+    settings: { tempo, hintDelay },
     input: {
       mode,
       on: (handler: (intent: Intent) => void) => {

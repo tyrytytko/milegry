@@ -17,6 +17,7 @@ export const DEFAULT_SETTINGS: Settings = {
   childName: '',
   sessionLimit: 15, // Z-25
   ageGroup: '3-5',
+  hintDelay: 'medium',
 };
 
 const oneOf = <T>(value: unknown, allowed: readonly T[], fallback: T): T =>
@@ -55,6 +56,7 @@ export function loadSettings(store: Store): Settings {
     childName: sanitizeChildName(raw.childName),
     sessionLimit: oneOf(raw.sessionLimit, SESSION_LIMITS, d.sessionLimit),
     ageGroup: oneOf(raw.ageGroup, AGE_GROUPS, d.ageGroup),
+    hintDelay: oneOf(raw.hintDelay, ['short', 'medium', 'long', 'off'] as const, d.hintDelay),
   };
 }
 

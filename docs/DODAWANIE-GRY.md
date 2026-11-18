@@ -64,6 +64,9 @@ podaną naraz?** Tak → `runRound`. Nie (ruch, plansza, wiele obiektów naraz, 
 - **Podpowiedzi dokładają potomka.** Poświata (1. błąd) i podpowiedź (2. błąd, bezczynność) to
   `<span class="mg-hint">` dopisany na końcu `question` / `target`. Te elementy muszą mieć `position: relative`
   (albo `absolute`), a ich style nie mogą zależeć od `:last-child` ani liczby dzieci.
+- **Podpowiedź z bezczynności może nie przyjść.** Rodzic wybiera w panelu, czy przychodzi po 6, 12 (domyślnie)
+  albo 20 s, czy wcale (`HintDelay` w `src/core/types.ts`). Gra nie może liczyć na to, że podpowiedź coś
+  odsłoni albo pojawi się w określonej chwili; pewna jest tylko drabina po błędach.
 - **Podaj `question`, jeśli scena ma osobne pytanie** (wzór, kupka orzeszków). Bez niego 1. błąd rozświetla
   od razu poprawną odpowiedź.
 - **Klawisz-podpowiedź** (`.mg-hint--key`) stoi nad celem; gdy nad celem brak miejsca w scenie (72 px) — pod

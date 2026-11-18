@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createCoach, FINISH_FALLBACK_MS, NEXT_TASK_MS } from './coach';
-import { FIRST_IDLE_MS, IDLE_MS, LOCK_MS } from './coachCore';
+import { createCoach, FINISH_FALLBACK_MS, IDLE_MS, NEXT_TASK_MS } from './coach';
+import { FIRST_IDLE_PART, LOCK_MS } from './coachCore';
 import { fakeCtx, fakeEl, flush, hintsIn } from './fakeCtx';
 
 describe('createCoach — warstwa DOM', () => {
@@ -71,12 +71,39 @@ describe('createCoach — warstwa DOM', () => {
     const f = fakeCtx();
     const coach = createCoach(f.ctx);
     coach.setTask({ key: 1, target: fakeEl(), hintKey: '3' });
-    f.advance(FIRST_IDLE_MS - 100);
+    f.advance(IDLE_MS.medium * FIRST_IDLE_PART - 100);
     f.emit({ type: 'move', dir: 'left' });
-    f.advance(IDLE_MS - 100);
+    f.advance(IDLE_MS.medium - 100);
     expect(f.ui.hint).not.toHaveBeenCalled();
     f.advance(100);
     expect(f.ui.hint).toHaveBeenCalledTimes(1);
+  });
+
+  it('czas bezczynności z ustawień rodzica: sekundy rzeczywiste przy każdym tempie', () => {
+    for (const tempo of ['calm', 'medium', 'lively'] as const) {
+      for (const delay of ['short', 'medium', 'long'] as const) {
+        const f = fakeCtx('keyboard', tempo, delay);
+        const coach = createCoach(f.ctx);
+        coach.setTask({ key: 1, target: fakeEl() });
+        coach.setTask({ key: 2, target: fakeEl() }); // drugie zadanie: pełny czas
+        f.advance(IDLE_MS[delay] - 100);
+        expect(f.ui.hint).not.toHaveBeenCalled();
+        f.advance(150);
+        expect(f.ui.hint).toHaveBeenCalledTimes(1);
+      }
+    }
+  });
+
+  it('podpowiedzi z bezczynności wyłączone: nic nie przychodzi samo, po błędach drabina działa', () => {
+    const f = fakeCtx('keyboard', 'medium', 'off');
+    const coach = createCoach(f.ctx);
+    coach.setTask({ key: 1, target: fakeEl() });
+    f.advance(60_000);
+    expect(f.ui.hint).not.toHaveBeenCalled();
+    expect(coach.miss()).toBe('glow');
+    f.advance(LOCK_MS);
+    expect(coach.miss()).toBe('hint');
+    expect(f.ui.hint).toHaveBeenCalledTimes(2);
   });
 
   it('success chowa podpowiedzi', () => {

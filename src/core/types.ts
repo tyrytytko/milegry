@@ -97,6 +97,14 @@ export type SessionLimit = 0 | 10 | 15 | 20 | 30;
  */
 export type AgeGroup = '3-5' | '5-7';
 
+/**
+ * Po jakim czasie bezczynności dziecka warstwa rundy sama pokazuje podpowiedź: 6 / 12 / 20 sekund
+ * rzeczywistych (tempo ich nie zmienia) albo wcale ('off'). Na pierwszym zadaniu rundy, zanim dziecko
+ * cokolwiek zrobi, czeka połowę tego czasu. Drabiny podpowiedzi po błędach (Z-19) nie dotyczy —
+ * ta działa zawsze.
+ */
+export type HintDelay = 'short' | 'medium' | 'long' | 'off';
+
 export interface Settings {
   /** Globalne wyciszenie efektów. */
   muted: boolean;
@@ -112,6 +120,8 @@ export interface Settings {
   sessionLimit: SessionLimit;
   /** Wiek dziecka — decyduje, które gry hub pokazuje (AgeGroup). Domyślnie '3-5'. */
   ageGroup: AgeGroup;
+  /** Kiedy przychodzi podpowiedź z bezczynności (HintDelay). Domyślnie 'medium' (12 s). */
+  hintDelay: HintDelay;
 }
 
 // ---------------------------------------------------------------------------

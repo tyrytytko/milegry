@@ -8,14 +8,13 @@ import type { MissOutcome } from './index';
 
 /** Blokada odpowiedzi po błędzie (ms czasu gry) — chroni przed „wolnym waleniem” (Z-21). */
 export const LOCK_MS = 700;
-/** Bezczynność, po której pokazujemy podpowiedź obrazem (ms czasu gry). */
-export const IDLE_MS = 6000;
 /**
- * To samo na początku rundy: pierwsze zadanie, dziecko jeszcze nic nie zrobiło, więc może nie wiedzieć,
- * co robić. Po pierwszym działaniu (także błędzie) obowiązuje IDLE_MS — inaczej podpowiedź z bezczynności
- * przychodziłaby 3 s po 1. błędzie i przeskakiwała szczebel poświaty (Z-19).
+ * Jaką część czasu bezczynności (`idleMs`) czekamy na początku rundy: pierwsze zadanie, dziecko jeszcze
+ * nic nie zrobiło, więc może nie wiedzieć, co robić. Po pierwszym działaniu (także błędzie) obowiązuje
+ * pełny czas — inaczej podpowiedź z bezczynności przychodziłaby tuż po 1. błędzie i przeskakiwała
+ * szczebel poświaty (Z-19).
  */
-export const FIRST_IDLE_MS = 3000;
+export const FIRST_IDLE_PART = 0.5;
 
 /** 'glow' = spokojna poświata obiektu pytania; 'hint' = wyraźna podpowiedź przy odpowiedzi. */
 export type Cue = 'glow' | 'hint';
@@ -40,7 +39,15 @@ export interface CoachCore<T> {
   destroy(): void;
 }
 
-export function createCoachCore<T extends { key: string | number }>(clock: Clock, view: CoachView<T>): CoachCore<T> {
+/**
+ * `idleMs` — bezczynność (ms czasu gry), po której pokazujemy podpowiedź obrazem; `null` = podpowiedź
+ * z bezczynności wyłączona (drabina po błędach działa bez zmian).
+ */
+export function createCoachCore<T extends { key: string | number }>(
+  clock: Clock,
+  view: CoachView<T>,
+  idleMs: number | null,
+): CoachCore<T> {
   let task: T | null = null;
   /** Szczebel drabiny: 0 = bez błędów, 1 = poświata, 2 = podpowiedź (3 = „razem” zeruje do 0). */
   let step = 0;
@@ -70,8 +77,8 @@ export function createCoachCore<T extends { key: string | number }>(clock: Clock
   const restartIdle = () => {
     cancelIdle();
     cancelIdle = () => {};
-    if (!task || done) return;
-    cancelIdle = clock.after(tasksSeen === 1 && !acted ? FIRST_IDLE_MS : IDLE_MS, () => show('hint'));
+    if (!task || done || idleMs === null) return;
+    cancelIdle = clock.after(tasksSeen === 1 && !acted ? idleMs * FIRST_IDLE_PART : idleMs, () => show('hint'));
   };
 
   /** Akcja dziecka: koniec „pierwszego czekania”, licznik bezczynności od zera. */

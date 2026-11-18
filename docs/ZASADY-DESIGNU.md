@@ -37,7 +37,7 @@ czy coś dodać (efekt, dźwięk, ruch, nagrodę) — nie dodawaj.
 
 - **Z-17** Nie ma przegranej, żyć, punktów, gwiazdek-ocen, „game over”.
 - **Z-18** Błąd → łagodne kołysanie elementu (≤ 2 wahnięcia, ≤ 8 px, ~400 ms); element zostaje do ponowienia. Bez czerwonego X.
-- **Z-19** Drabina podpowiedzi (realizuje ją warstwa rundy `src/core/round`): 1. błąd → obiekt pytania spokojnie „oddycha” poświatą (polecenie pokazane jeszcze raz); 2. → wyraźna podpowiedź przy poprawnej odpowiedzi (paluszek albo klawisz); 3. → „zróbmy razem”: gra pokazuje rozwiązanie, a zadanie wraca później w rundzie. Bezczynność pokazuje podpowiedź, ale nie liczy się jako błąd.
+- **Z-19** Drabina podpowiedzi (realizuje ją warstwa rundy `src/core/round`): 1. błąd → obiekt pytania spokojnie „oddycha” poświatą (polecenie pokazane jeszcze raz); 2. → wyraźna podpowiedź przy poprawnej odpowiedzi (paluszek albo klawisz); 3. → „zróbmy razem”: gra pokazuje rozwiązanie, a zadanie wraca później w rundzie. Bezczynność pokazuje podpowiedź, ale nie liczy się jako błąd; po jakim czasie (albo wcale) — ustawia rodzic w panelu.
 - **Z-20** Sukces → krótka (≤ 800 ms), zawsze taka sama reakcja związana z zadaniem (kurczak się wykluwa, okiennica pasuje) — nagrodą jest skutek działania, nie ocena. Bez napisów-pochwał; ewentualna pochwała słowna (przyszły tryb mówiony) dotyczy działania („Znalazłeś M!”), nigdy osoby („jesteś mądry”).
 - **Z-21** Przypadkowe walenie w klawiaturę/ekran nie daje sukcesu: strażnik w `core/input` odrzuca szybkie serie klawiszy, po każdym błędzie warstwa rundy przez chwilę nie przyjmuje odpowiedzi (blokada po błędzie), a na ekranie liczy się tylko pierwszy palec (dotyk dłonią jest ignorowany).
 
