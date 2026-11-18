@@ -69,7 +69,7 @@ czy coś dodać (efekt, dźwięk, ruch, nagrodę) — nie dodawaj.
 - **Z-35** Litery: start od WIELKICH drukowanych (takie są na klawiszach). Krój liter „do nauki” (drukowane / pisane) wybiera rodzic; gry renderują litery wyłącznie przez `ctx.ui.letter(...)`, nigdy własnym fontem.
 - **Z-36** *(dotyczy przyszłego trybu mówionego — dziś nieobowiązująca)* Głos mówi głoskę („m”, nie „my” ani „em”) i słowo-kotwicę („M jak miś”).
 - **Z-37** Liczby zawsze najpierw na konkretach (orzeszki, patyczki), symbol („2 + 3”) dopiero obok konkretu. Zakresy: do 3 → do 5 → do 10.
-  Wyjątek: w grze „konkurs-matematyczny” liczby do 20 (w najtrudniejszych zadaniach do około 30) występują jako sam zapis, bez przedmiotów do policzenia — gra przygotowuje do konkursu matematycznego dla klasy 1; decyzja rodzica.
+  Wyjątek: w grze „konkurs-matematyczny” liczby na wszystkich poziomach (do 10, do 20, w najtrudniejszych zadaniach do 30) występują jako sam zapis, bez przedmiotów do policzenia — gra przygotowuje do konkursu matematycznego dla klasy 1; decyzja rodzica.
 - **Z-38** Zadania nie wymagają pamiętania więcej niż 2–4 elementów; kody do bram są widoczne na ekranie, nie do zapamiętania.
   Wyjątek: gra pamięciowa „pary” na poziomach 4–5 (6 i 8 par) świadomie przekracza ten limit — poziom wybiera rodzic (Z-39), nie ma kar ani liczników, znalezione pary zostają odkryte, a bezczynność podpowiada znaną parę.
   Wyjątek: gra „imie” na poziomach 4–5 chowa wzór całego imienia — to własne imię dziecka, wzór wraca po pierwszym błędzie, a poziom wybiera rodzic (Z-39).

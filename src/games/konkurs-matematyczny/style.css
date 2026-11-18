@@ -1,0 +1,695 @@
+/*
+ * „Matematyczne zagadki” — style tylko tej gry (prefiks .g-konkurs-matematyczny). Kolory, czasy i promienie
+ * wyłącznie z tokenów (--mg-…). Rozmiary w jednostkach kontenera (cqw/cqh): root gry ma container-type: size,
+ * więc scena skaluje się z ramką w pionie i w poziomie (Z-34); --mg-touch-min pilnuje celów dotykowych (Z-33).
+ */
+
+/* --- Scena: stała przez całą rundę (Z-02); przenikaniem wchodzi tylko treść zadania --- */
+.g-konkurs-matematyczny-scene {
+  /* Wąska scena (telefon w pionie): karty 2 × 2. --card to wysokość karty (i podstawa wielkości treści). */
+  --g-konkurs-matematyczny-card: max(var(--mg-touch-min), min(30cqw, 16cqh));
+  --g-konkurs-matematyczny-columns: 2;
+  /* Szerokość karty: szersza niż wysokość, bo mieści słowo z kodu literowego (litery pisane są szerokie).
+     Wszystkie karty mają tę szerokość w każdym zadaniu, więc rząd kart ma zawsze ten sam rozmiar (Z-02),
+     a rząd nadal mieści się w scenie. */
+  --g-konkurs-matematyczny-card-width: min(
+    calc(var(--g-konkurs-matematyczny-card) * 1.5),
+    calc((100cqw - 2 * var(--mg-space) - var(--mg-touch-gap)) / 2)
+  );
+  /* Wysokość rzędu kart (2 × 2) — z niej i z odstępów wynika miejsce na rysunek. */
+  --g-konkurs-matematyczny-cards-height: calc(2 * var(--g-konkurs-matematyczny-card) + var(--mg-touch-gap));
+  --g-konkurs-matematyczny-scene-gap: max(var(--mg-space-l), 4cqh);
+  --g-konkurs-matematyczny-sheet-pad: max(var(--mg-space), 3cqh);
+  /* Z boków kartki mały odstęp: szerokie rysunki (krzyżyk, ciąg pięciu liczb) mają więcej miejsca. */
+  --g-konkurs-matematyczny-sheet-pad-inline: var(--mg-space-s);
+  --g-konkurs-matematyczny-sheet-gap: var(--g-konkurs-matematyczny-sheet-pad);
+  --g-konkurs-matematyczny-prompt-font: max(var(--mg-font-size), min(5cqw, 4cqh));
+  /* Polecenie ma miejsce na dwa wiersze, także gdy zajmuje jeden — rysunek pod nim nie skacze między zadaniami. */
+  --g-konkurs-matematyczny-prompt-min-height: 2.9em;
+  --g-konkurs-matematyczny-prompt-leading: 1.45;
+  /* Kartka nad kartami: miejsce na rysunek ma stałą wysokość (5 czcionek rysunku — mieści najwyższe rysunki:
+     tarczę, piramidkę i tabelkę kodu), więc kartka i rząd kart mają ten sam rozmiar i miejsce przy każdym
+     zadaniu (Z-02). Na niskiej scenie wysokość ogranicza to, co zostaje po kartach, odstępach i poleceniu
+     w dwóch wierszach (slot-room) — wtedy czcionki rysunku maleją razem z nim. */
+  --g-konkurs-matematyczny-slot-room: calc(
+    100cqh - var(--mg-space) - var(--mg-edge-safe) - var(--g-konkurs-matematyczny-scene-gap) -
+      var(--g-konkurs-matematyczny-cards-height) - 2 * var(--g-konkurs-matematyczny-sheet-pad) -
+      var(--g-konkurs-matematyczny-sheet-gap) - 6px -
+      2.9 * var(--g-konkurs-matematyczny-prompt-font)
+  );
+  /* Czcionka rysunku zadania (rzędy liczb, piramidka, pola) i tabelki kodu literowego (tabelka z kodem
+     ma wysokość ok. 5,9 czcionki kodu + obrysy). */
+  --g-konkurs-matematyczny-figure-font: min(max(2rem, min(9cqw, 8cqh)), var(--g-konkurs-matematyczny-slot-room) / 5);
+  --g-konkurs-matematyczny-slot-height: calc(5 * var(--g-konkurs-matematyczny-figure-font));
+  --g-konkurs-matematyczny-code-font: min(
+    max(1.5rem, min(7.5cqw, 6.5cqh)),
+    (var(--g-konkurs-matematyczny-slot-height) - 12px) / 5.9
+  );
+  /* Szerokość wnętrza kartki (kartka bez odstępów i obrysu) — długi rząd rysunku mieści się w niej. */
+  --g-konkurs-matematyczny-figure-width: calc(
+    min(100cqw - 2 * var(--mg-space), 44rem) - 2 * var(--g-konkurs-matematyczny-sheet-pad-inline) - 6px
+  );
+  /* Tarcza: prawie cała wysokość miejsca na rysunek. */
+  --g-konkurs-matematyczny-target-height: 4.8em;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--g-konkurs-matematyczny-scene-gap);
+  padding: var(--mg-space) var(--mg-space) var(--mg-edge-safe); /* nic klikalnego przy dolnej krawędzi (Z-33) */
+  background: var(--mg-scene-sky);
+  color: var(--mg-ink);
+}
+
+/* Szeroka scena: cztery karty w jednym rzędzie, gdy się mieszczą z odstępami. */
+@container (min-width: 480px) {
+  .g-konkurs-matematyczny-scene {
+    --g-konkurs-matematyczny-card: max(var(--mg-touch-min), min(16cqw, 22cqh));
+    --g-konkurs-matematyczny-cards-height: var(--g-konkurs-matematyczny-card);
+    --g-konkurs-matematyczny-columns: 4;
+    --g-konkurs-matematyczny-card-width: min(
+      calc(var(--g-konkurs-matematyczny-card) * 1.5),
+      calc((100cqw - 2 * var(--mg-space) - 3 * var(--mg-touch-gap)) / 4)
+    );
+  }
+}
+
+/* Niska i szeroka scena (telefon w poziomie): kartka po lewej, karty 2 × 2 po prawej. Kartka wypełnia
+   wysokość sceny, a pole kart ma stałą szerokość (dwie karty), więc kartka i karty stoją w tym samym
+   miejscu i mają ten sam rozmiar przy każdym zadaniu (Z-02); rysunek dopasowuje się do wysokości (cqh). */
+@container (min-aspect-ratio: 4/3) and (max-height: 420px) {
+  .g-konkurs-matematyczny-scene {
+    --g-konkurs-matematyczny-card: max(
+      var(--mg-touch-min),
+      min(calc((100cqh - var(--mg-space) - var(--mg-edge-safe) - var(--mg-touch-gap)) / 2), 15cqw)
+    );
+    --g-konkurs-matematyczny-columns: 2;
+    --g-konkurs-matematyczny-card-width: calc(var(--g-konkurs-matematyczny-card) * 1.4);
+    --g-konkurs-matematyczny-choices-width: calc(2 * var(--g-konkurs-matematyczny-card-width) + var(--mg-touch-gap));
+    --g-konkurs-matematyczny-figure-font: max(1.5rem, 11cqh);
+    --g-konkurs-matematyczny-code-font: max(1.125rem, 7.5cqh);
+    --g-konkurs-matematyczny-figure-width: calc(
+      100cqw - 2 * var(--mg-space) - var(--mg-space-l) - var(--g-konkurs-matematyczny-choices-width) -
+        2 * var(--g-konkurs-matematyczny-sheet-pad-inline) - 6px
+    );
+    /* Kartka ma tu stały rozmiar sama z siebie (wysokość sceny); rysunek ma tyle miejsca, ile potrzebuje. */
+    --g-konkurs-matematyczny-slot-height: auto;
+    /* Niska kartka: polecenie bez zapasu na drugi wiersz, ciaśniejsza interlinia, małe odstępy w kartce —
+       żeby wysokie rysunki zmieściły się z poleceniem w dwóch wierszach. */
+    --g-konkurs-matematyczny-prompt-min-height: 0;
+    --g-konkurs-matematyczny-prompt-leading: 1.25;
+    --g-konkurs-matematyczny-sheet-pad: var(--mg-space-s);
+    --g-konkurs-matematyczny-sheet-gap: var(--mg-space-xs);
+    /* Wysokie rysunki (tarcza, szachownica, piramidka 1–2–3, figury nazwane): cała wysokość, która zostaje
+       w kartce pod poleceniem w dwóch wierszach — nie więcej, żeby nie nachodziły na polecenie. */
+    --g-konkurs-matematyczny-target-height: min(
+      4.8em,
+      100cqh - var(--mg-space) - var(--mg-edge-safe) - 2 * var(--g-konkurs-matematyczny-sheet-pad) - 6px -
+        2 * var(--g-konkurs-matematyczny-prompt-leading) * var(--g-konkurs-matematyczny-prompt-font) -
+        var(--g-konkurs-matematyczny-sheet-gap)
+    );
+    flex-direction: row;
+    align-items: stretch;
+    gap: var(--mg-space-l);
+  }
+
+  .g-konkurs-matematyczny-sheet {
+    flex: 1 1 0;
+    justify-content: center;
+    width: auto;
+    min-width: 0;
+  }
+
+  .g-konkurs-matematyczny-choices {
+    align-self: center;
+    justify-content: center;
+    width: var(--g-konkurs-matematyczny-choices-width);
+  }
+}
+
+@keyframes g-konkurs-matematyczny-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Nowa treść zadania wchodzi przenikaniem. Animacja leży na elemencie-dziecku, nie na kartce i karcie —
+   tam przykryłaby kołysanie z rdzenia (mg-wobble). */
+.g-konkurs-matematyczny-fade,
+.g-konkurs-matematyczny-figure {
+  animation: g-konkurs-matematyczny-in var(--mg-dur-base) var(--mg-ease);
+}
+
+/* --- Kartka: polecenie u góry, zadanie pośrodku. position: relative, bo rdzeń kotwiczy przy niej poświatę --- */
+.g-konkurs-matematyczny-sheet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--g-konkurs-matematyczny-sheet-gap);
+  width: min(100%, 44rem);
+  padding: var(--g-konkurs-matematyczny-sheet-pad) var(--g-konkurs-matematyczny-sheet-pad-inline);
+  border: 3px solid var(--mg-sand);
+  border-radius: var(--mg-radius-l);
+  background: var(--mg-surface);
+  box-shadow: var(--mg-shadow-soft);
+  transition: background-color var(--mg-dur-base) var(--mg-ease), border-color var(--mg-dur-base) var(--mg-ease);
+}
+
+/* Rozwiązane: kartka zmienia tło na „dobrze” (Z-20); obok koloru zmienia się też obrys „?” w liczbę (Z-15). */
+.g-konkurs-matematyczny-sheet.g-konkurs-matematyczny-solved {
+  border-color: var(--mg-moss);
+  background: var(--mg-sage-light);
+}
+
+.g-konkurs-matematyczny-prompt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0; /* polecenie nigdy nie jest ściskane przez rysunek */
+  min-height: var(--g-konkurs-matematyczny-prompt-min-height);
+  margin: 0;
+  font-size: var(--g-konkurs-matematyczny-prompt-font);
+  font-weight: var(--mg-font-weight-bold);
+  line-height: var(--g-konkurs-matematyczny-prompt-leading);
+  text-align: center;
+}
+
+/* Litera platformy w poleceniu („Ile to A?”): wielkości tekstu polecenia i bez własnej interlinii, więc wiersz
+   polecenia ma tę samą wysokość co w innych zadaniach (Z-02). Pisana — jak w rysunku, trochę mniejsza. */
+.g-konkurs-matematyczny-prompt-letter .mg-letter,
+.g-konkurs-matematyczny-prompt-letter .mg-letter[data-script='cursive'] {
+  line-height: 1;
+}
+
+.g-konkurs-matematyczny-prompt-letter .mg-letter[data-script='cursive'] {
+  font-size: calc(1em * var(--mg-letter-cursive-scale) * 0.75);
+}
+
+.g-konkurs-matematyczny-figure-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: var(--g-konkurs-matematyczny-slot-height);
+}
+
+/* Rysunek zadania: rząd liczb, znaków, kostek i „?”; wielkość z jednej czcionki (em). */
+.g-konkurs-matematyczny-figure {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25em;
+  font-size: var(--g-konkurs-matematyczny-figure-font);
+  white-space: nowrap;
+  font-weight: var(--mg-font-weight-bold);
+  line-height: 1;
+}
+
+/* Długi rząd (fit = jego szerokość w em, z figures.ts): czcionka mniejsza, gdy rząd nie mieści się na kartce. */
+.g-konkurs-matematyczny-figure.g-konkurs-matematyczny-figure--fit {
+  font-size: min(
+    var(--g-konkurs-matematyczny-figure-font),
+    calc(var(--g-konkurs-matematyczny-figure-width) / var(--g-konkurs-matematyczny-fit))
+  );
+}
+
+.g-konkurs-matematyczny-sign {
+  color: var(--mg-ink);
+}
+
+/* --- Ta sama litera: „A + A + A = 12”, pod spodem „A = ?” --- */
+.g-konkurs-matematyczny-figure--letter {
+  flex-direction: column;
+  gap: 0.35em;
+}
+
+.g-konkurs-matematyczny-figure-row {
+  display: flex;
+  align-items: center;
+  gap: 0.25em;
+}
+
+.g-konkurs-matematyczny-letter-token {
+  display: inline-flex;
+  align-items: center;
+}
+
+.g-konkurs-matematyczny-figure--letter .mg-letter[data-script='cursive'] {
+  font-size: calc(1em * var(--mg-letter-cursive-scale) * 0.75);
+}
+
+/* Dwie litery: trzy rzędy („A + A = 12”, „A + B = 10”, „B = ?”) — ciaśniej, żeby zmieściły się w miejscu na rysunek. */
+.g-konkurs-matematyczny-figure--letter.g-konkurs-matematyczny-figure--two-letters {
+  gap: 0.2em;
+}
+
+/* „?”: kreskowany obrys — miejsce na odpowiedź widać kształtem, nie tylko kolorem (Z-15).
+   Stała szerokość na liczbę dwucyfrową, żeby odpowiedź (np. 10) nie przesuwała ani nie poszerzała rysunku. */
+.g-konkurs-matematyczny-hole {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 1.75em;
+  height: 1.3em;
+  padding: 0;
+  border: 3px dashed var(--mg-ink-soft);
+  border-radius: var(--mg-radius-s);
+  background: var(--mg-surface);
+}
+
+.g-konkurs-matematyczny-hole.g-konkurs-matematyczny-hole--filled {
+  border-style: solid;
+  border-color: var(--mg-moss);
+}
+
+.g-konkurs-matematyczny-die {
+  display: inline-block;
+  width: 1.3em;
+  height: 1.3em;
+}
+
+.g-konkurs-matematyczny-die svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.g-konkurs-matematyczny-die-body {
+  fill: color-mix(in srgb, var(--mg-honey) 20%, var(--mg-surface));
+  stroke: var(--mg-ink);
+  stroke-width: 4;
+}
+
+.g-konkurs-matematyczny-pip {
+  fill: var(--mg-ink);
+}
+
+/* --- Piramidka: kółka z liczbami (SVG), „?” to kółko z kreskowanym obrysem --- */
+.g-konkurs-matematyczny-pyramid-box {
+  display: block;
+  height: 4.4em;
+}
+
+.g-konkurs-matematyczny-pyramid {
+  display: block;
+  height: 100%;
+  width: auto;
+  overflow: visible;
+}
+
+.g-konkurs-matematyczny-pyramid-link {
+  stroke: var(--mg-ink-soft);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.g-konkurs-matematyczny-pyramid-cell {
+  fill: color-mix(in srgb, var(--mg-water) 25%, var(--mg-surface));
+  stroke: var(--mg-ink);
+  stroke-width: 4;
+}
+
+.g-konkurs-matematyczny-pyramid-cell--hole {
+  fill: var(--mg-surface);
+  stroke: var(--mg-ink-soft);
+  stroke-dasharray: 10 7;
+}
+
+.g-konkurs-matematyczny-pyramid-cell--filled {
+  stroke: var(--mg-moss);
+  stroke-dasharray: none;
+}
+
+/* Puste kółko (do policzenia po drodze): ciągły obrys jak liczby, jasne wnętrze bez liczby. */
+.g-konkurs-matematyczny-pyramid-cell--blank {
+  fill: var(--mg-surface);
+}
+
+/* Piramidka z trzema rzędami: prawie cała wysokość miejsca na rysunek (jak tarcza). */
+.g-konkurs-matematyczny-pyramid-box.g-konkurs-matematyczny-pyramid-box--tall {
+  height: var(--g-konkurs-matematyczny-target-height);
+}
+
+.g-konkurs-matematyczny-pyramid-num {
+  fill: var(--mg-ink);
+  font-size: 40px;
+  font-weight: var(--mg-font-weight-bold);
+}
+
+/* --- Brakujące pola: mur albo podłoga (SVG); brakujące pole = kreskowany obrys bez wypełnienia (Z-15) --- */
+/* Wysokość rośnie z liczbą rzędów (--g-konkurs-matematyczny-rows z figures.ts): rząd płytek albo cegieł ma 1 em,
+   więc płytka i cegła mają tę samą wielkość w każdym zadaniu (= TILE_ROW_EM w figures.ts). */
+.g-konkurs-matematyczny-tiles-box {
+  display: block;
+  height: calc(var(--g-konkurs-matematyczny-rows) * 1em);
+}
+
+.g-konkurs-matematyczny-tiles {
+  display: block;
+  height: 100%;
+  width: auto;
+}
+
+.g-konkurs-matematyczny-tile {
+  stroke: var(--mg-ink);
+  stroke-width: 3;
+}
+
+.g-konkurs-matematyczny-tiles--floor .g-konkurs-matematyczny-tile {
+  fill: color-mix(in srgb, var(--mg-water) 45%, var(--mg-surface));
+}
+
+.g-konkurs-matematyczny-tiles--wall .g-konkurs-matematyczny-tile {
+  fill: color-mix(in srgb, var(--mg-chestnut) 40%, var(--mg-surface));
+}
+
+.g-konkurs-matematyczny-tiles .g-konkurs-matematyczny-tile--missing {
+  fill: var(--mg-surface);
+  stroke: var(--mg-ink-soft);
+  stroke-dasharray: 6 5;
+}
+
+/* --- Tarcza (SVG): pierścienie opisane liczbami, trafienia to ciemne kropki z jasną obwódką (Z-15) --- */
+.g-konkurs-matematyczny-target-box {
+  display: block;
+  height: var(--g-konkurs-matematyczny-target-height);
+}
+
+.g-konkurs-matematyczny-target {
+  display: block;
+  height: 100%;
+  width: auto;
+}
+
+.g-konkurs-matematyczny-target-ring {
+  stroke: var(--mg-ink);
+  stroke-width: 3;
+}
+
+.g-konkurs-matematyczny-target-ring--a {
+  fill: color-mix(in srgb, var(--mg-water) 35%, var(--mg-surface));
+}
+
+.g-konkurs-matematyczny-target-ring--b {
+  fill: var(--mg-surface);
+}
+
+.g-konkurs-matematyczny-target-ring--center {
+  fill: color-mix(in srgb, var(--mg-honey) 40%, var(--mg-surface));
+}
+
+.g-konkurs-matematyczny-target-num {
+  fill: var(--mg-ink);
+  font-weight: var(--mg-font-weight-bold);
+}
+
+.g-konkurs-matematyczny-target-hit {
+  fill: var(--mg-ink);
+  stroke: var(--mg-surface);
+  stroke-width: 4;
+}
+
+/* --- Rosnące figury (SVG): trzy układy kółek albo kwadratów z podpisami, obok „?” --- */
+.g-konkurs-matematyczny-growing-box {
+  display: block;
+  height: 3.6em; /* = GROW_HEIGHT_EM w figures.ts */
+}
+
+/* Figury nazwane (trójkąt, kwadrat, krzyżyk — do 7 rzędów): prawie cała wysokość miejsca na rysunek (jak tarcza). */
+.g-konkurs-matematyczny-growing-box.g-konkurs-matematyczny-growing-box--tall {
+  height: var(--g-konkurs-matematyczny-target-height); /* = GROW_HEIGHT_EM.tall w figures.ts (w pionie) */
+}
+
+.g-konkurs-matematyczny-growing {
+  display: block;
+  height: 100%;
+  width: auto;
+}
+
+.g-konkurs-matematyczny-growing-cell {
+  fill: color-mix(in srgb, var(--mg-berry) 45%, var(--mg-surface));
+  stroke: var(--mg-ink);
+  stroke-width: 3;
+}
+
+.g-konkurs-matematyczny-growing-num {
+  fill: var(--mg-ink);
+  font-weight: var(--mg-font-weight-bold);
+}
+
+/* „?” w rzędzie podpisów — ten sam wygląd co pole „?” w innych zadaniach (kreskowany obrys, po rozwiązaniu ciągły). */
+.g-konkurs-matematyczny-growing-hole {
+  fill: var(--mg-surface);
+  stroke: var(--mg-ink-soft);
+  stroke-width: 4;
+  stroke-dasharray: 10 7;
+}
+
+.g-konkurs-matematyczny-growing-hole.g-konkurs-matematyczny-growing-hole--filled {
+  stroke: var(--mg-moss);
+  stroke-dasharray: none;
+}
+
+/* --- Szachownica (SVG): pola ciemne (ciemne z jasnymi paskami) i jasne; brakujące — kreskowany obrys (Z-15) --- */
+.g-konkurs-matematyczny-scene {
+  --g-konkurs-matematyczny-chess-dark: color-mix(in srgb, var(--mg-ink) 75%, var(--mg-water));
+  --g-konkurs-matematyczny-chess-stripe: color-mix(in srgb, var(--mg-water) 45%, var(--mg-surface));
+  /* Jasne pole: piasek — wyraźnie ciemniejszy od brakującego pola (kartka z kreskowanym obrysem). */
+  --g-konkurs-matematyczny-chess-light: var(--mg-sand);
+}
+
+.g-konkurs-matematyczny-chess-box {
+  display: block;
+  height: var(--g-konkurs-matematyczny-target-height);
+}
+
+.g-konkurs-matematyczny-chess {
+  display: block;
+  height: 100%;
+  width: auto;
+}
+
+.g-konkurs-matematyczny-chess-cell {
+  stroke: var(--mg-ink);
+  stroke-width: 2;
+}
+
+.g-konkurs-matematyczny-chess-cell--dark {
+  fill: var(--g-konkurs-matematyczny-chess-dark);
+}
+
+.g-konkurs-matematyczny-chess-cell--light {
+  fill: var(--g-konkurs-matematyczny-chess-light);
+}
+
+.g-konkurs-matematyczny-chess .g-konkurs-matematyczny-chess-cell--missing {
+  fill: var(--mg-surface);
+  stroke: var(--mg-ink-soft);
+  stroke-width: 3;
+  stroke-dasharray: 6 5;
+}
+
+.g-konkurs-matematyczny-chess-stripes {
+  stroke: var(--g-konkurs-matematyczny-chess-stripe);
+  stroke-width: 4;
+  stroke-linecap: butt;
+}
+
+/* Obok szachownicy dwa „?”: przy ciemnym kwadraciku i przy jasnym. */
+.g-konkurs-matematyczny-chess-ask {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+}
+
+.g-konkurs-matematyczny-chess-ask-row,
+.g-konkurs-matematyczny-pair-row {
+  display: flex;
+  align-items: center;
+  gap: 0.2em;
+}
+
+/* Kwadracik koloru pola — ten sam wzór co na szachownicy (paski na ciemnym), z obrysem. */
+.g-konkurs-matematyczny-swatch {
+  display: inline-block;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 0.8em;
+  height: 0.8em;
+  border: 2px solid var(--mg-ink);
+}
+
+.g-konkurs-matematyczny-swatch--dark {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--g-konkurs-matematyczny-chess-dark) 0 0.18em,
+    var(--g-konkurs-matematyczny-chess-stripe) 0.18em 0.26em
+  );
+}
+
+.g-konkurs-matematyczny-swatch--light {
+  background: var(--g-konkurs-matematyczny-chess-light);
+}
+
+/* --- Kod literowy: tabelka „litera nad liczbą” i rząd liczb z polem „?” pod nim --- */
+.g-konkurs-matematyczny-figure--code {
+  --g-konkurs-matematyczny-col: 1.45em;
+  flex-direction: column;
+  gap: 0.35em;
+  font-size: var(--g-konkurs-matematyczny-code-font);
+}
+
+.g-konkurs-matematyczny-legend {
+  display: flex;
+  gap: 0.15em;
+}
+
+.g-konkurs-matematyczny-legend-pair {
+  display: flex;
+  flex-direction: column;
+  width: var(--g-konkurs-matematyczny-col);
+  border: 3px solid var(--mg-sand);
+  border-radius: var(--mg-radius-s);
+  background: var(--mg-surface);
+}
+
+.g-konkurs-matematyczny-legend-letter,
+.g-konkurs-matematyczny-legend-value,
+.g-konkurs-matematyczny-code-num,
+.g-konkurs-matematyczny-code-letter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.25em;
+}
+
+.g-konkurs-matematyczny-legend-letter {
+  border-bottom: 3px solid var(--mg-sand);
+  border-radius: var(--mg-radius-s) var(--mg-radius-s) 0 0;
+  background: color-mix(in srgb, var(--mg-honey) 20%, var(--mg-surface));
+}
+
+.g-konkurs-matematyczny-code {
+  display: grid;
+  grid-template-columns: repeat(var(--g-konkurs-matematyczny-code-length), var(--g-konkurs-matematyczny-col));
+  gap: 0.15em;
+}
+
+.g-konkurs-matematyczny-code-num {
+  border-bottom: 3px solid var(--mg-ink-soft);
+}
+
+/* Kod „ile razem”: rząd „O + K + O = ?” pod tabelką ma czcionkę rysunku (większą niż tabelka) — to w nim jest pytanie. */
+.g-konkurs-matematyczny-figure--code-sum .g-konkurs-matematyczny-figure-row {
+  font-size: var(--g-konkurs-matematyczny-figure-font);
+}
+
+/* Długie słowo w tym rzędzie (fit = szerokość rzędu w em, z figures.ts): mniejsza czcionka, gdy nie mieści się na kartce. */
+.g-konkurs-matematyczny-figure--code-sum .g-konkurs-matematyczny-figure-row--fit {
+  font-size: min(
+    var(--g-konkurs-matematyczny-figure-font),
+    calc(var(--g-konkurs-matematyczny-figure-width) / var(--g-konkurs-matematyczny-fit))
+  );
+}
+
+/* Pole „?” słowa: od początku na całą szerokość rzędu liczb; litery odpowiedzi stają pod swoimi liczbami. */
+.g-konkurs-matematyczny-hole.g-konkurs-matematyczny-code-hole {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(var(--g-konkurs-matematyczny-code-length), 1fr);
+  width: auto;
+  height: 1.4em;
+  place-items: center;
+}
+
+.g-konkurs-matematyczny-code-hole:not(.g-konkurs-matematyczny-hole--filled) {
+  grid-template-columns: 1fr;
+}
+
+/* Krój pisany: WIELKIE litery pisane są szerokie i wysokie — mniejsza skala, żeby zmieściły się w kratkach. */
+.g-konkurs-matematyczny-figure--code .mg-letter[data-script='cursive'] {
+  font-size: calc(1em * var(--mg-letter-cursive-scale) * 0.65);
+  line-height: 1.2;
+}
+
+/* --- Karty odpowiedzi: ≥ 80 px z odstępem ≥ 16 px (Z-33) --- */
+.g-konkurs-matematyczny-choices {
+  display: grid;
+  grid-template-columns: repeat(var(--g-konkurs-matematyczny-columns), var(--g-konkurs-matematyczny-card-width));
+  grid-auto-rows: var(--g-konkurs-matematyczny-card);
+  gap: var(--mg-touch-gap);
+  flex-shrink: 0;
+}
+
+.g-konkurs-matematyczny-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 3px solid var(--mg-sand);
+  border-radius: var(--mg-radius);
+  background: var(--mg-surface);
+  box-shadow: var(--mg-shadow-soft);
+  color: var(--mg-ink);
+  font-size: calc(var(--g-konkurs-matematyczny-card) * 0.45);
+  font-weight: var(--mg-font-weight-bold);
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* Karty-słowa (kod literowy): litery platformy (ctx.ui.letter) w rozmiarze dobranym do najdłuższego słowa
+   zadania, żeby 3–4 litery mieściły się w szerokości karty bez ucinania także w kroju pisanym (jego WIELKIE
+   litery są szerokie, stąd mniejsza skala niż w rdzeniu). */
+.g-konkurs-matematyczny-card--len3 {
+  font-size: calc(var(--g-konkurs-matematyczny-card-width) * 0.21);
+}
+
+.g-konkurs-matematyczny-card--len4 {
+  font-size: calc(var(--g-konkurs-matematyczny-card-width) * 0.17);
+}
+
+.g-konkurs-matematyczny-signs {
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+}
+
+/* Trzy znaki na karcie (znaki przy czterech liczbach): mniejsza czcionka, żeby zmieściły się w karcie. */
+.g-konkurs-matematyczny-card--signs3 {
+  font-size: calc(var(--g-konkurs-matematyczny-card) * 0.32);
+}
+
+.g-konkurs-matematyczny-card--signs3 .g-konkurs-matematyczny-signs {
+  gap: 0.2em;
+}
+
+/* Karta szachownicy: dwie liczby jedna pod drugą, każda przy kwadraciku swojego pola. */
+.g-konkurs-matematyczny-card--pair {
+  font-size: calc(var(--g-konkurs-matematyczny-card) * 0.3);
+}
+
+.g-konkurs-matematyczny-pair {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15em;
+}
+
+.g-konkurs-matematyczny-word {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.g-konkurs-matematyczny-word .mg-letter[data-script='cursive'] {
+  font-size: calc(1em * var(--mg-letter-cursive-scale) * 0.75);
+}

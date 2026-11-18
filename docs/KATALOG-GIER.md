@@ -18,6 +18,7 @@ Statusy: `gotowa` · `w budowie` · `planowana` · `pomysł`.
 | 7 | `pary` | Pary pod liśćmi | pamięć | pamięć wzrokowa; pary obrazek–obrazek, WIELKA–mała, cyfra–zbiór | klawiatura, dotyk | gotowa |
 | 8 | `imie` | Literki z imienia | litery | litery własnego imienia (metoda odimienna), kolejność liter | klawiatura, dotyk | gotowa |
 | 9 | `literki-blizniaczki` | Literki bliźniaczki | litery | dopasowanie litery PISANEJ do DRUKOWANEJ | klawiatura, dotyk | gotowa |
+| 10 | `konkurs-matematyczny` | Matematyczne zagadki | liczby | typy zadań z konkursu matematycznego dla klasy 1 (brakująca liczba, ciągi, kody literowe, tarcza, brakujące pola…); wiek 5–7, polecenie tekstem | klawiatura, dotyk | gotowa |
 
 Skórki: świat leśny i spokojny (jeżyk, wiewiórka, kurczaczki, rybki, kasztany, żołędzie, liście).
 `literki` ma trzy skórki tej samej mechaniki: kurczaczki, rybki, kasztany. Pomysły na skórki bez decyzji:
