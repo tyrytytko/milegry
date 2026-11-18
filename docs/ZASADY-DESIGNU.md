@@ -22,6 +22,7 @@ czy coś dodać (efekt, dźwięk, ruch, nagrodę) — nie dodawaj.
 - **Z-08** Efekty są miękkie i ciche (sinus/trójkąt, narastanie ≥ 10 ms, ton podstawowy ≤ ~1,5 kHz).
 - **Z-09** Nie ma dźwięku porażki. Błąd = cisza albo neutralny, cichy ton.
 - **Z-10** **Gra musi być zrozumiała w ciszy** — przez demonstrację/animację podpowiedzi. Zero tekstu, który dziecko musiałoby przeczytać. Platforma nie ma trybu mówionego (lektora) — to pozycja w kolejce (`docs/KATALOG-GIER.md`).
+  Wyjątek: w grze „konkurs-matematyczny” zadanie ma krótkie polecenie tekstem — na konkursie matematycznym dziecko też czyta polecenia; decyzja rodzica.
 - **Z-11** Głośność efektów i globalne wyciszenie w panelu rodzica.
 
 ## Kolor i obraz
@@ -68,10 +69,11 @@ czy coś dodać (efekt, dźwięk, ruch, nagrodę) — nie dodawaj.
 - **Z-35** Litery: start od WIELKICH drukowanych (takie są na klawiszach). Krój liter „do nauki” (drukowane / pisane) wybiera rodzic; gry renderują litery wyłącznie przez `ctx.ui.letter(...)`, nigdy własnym fontem.
 - **Z-36** *(dotyczy przyszłego trybu mówionego — dziś nieobowiązująca)* Głos mówi głoskę („m”, nie „my” ani „em”) i słowo-kotwicę („M jak miś”).
 - **Z-37** Liczby zawsze najpierw na konkretach (orzeszki, patyczki), symbol („2 + 3”) dopiero obok konkretu. Zakresy: do 3 → do 5 → do 10.
+  Wyjątek: w grze „konkurs-matematyczny” liczby do 20 (w najtrudniejszych zadaniach do około 30) występują jako sam zapis, bez przedmiotów do policzenia — gra przygotowuje do konkursu matematycznego dla klasy 1; decyzja rodzica.
 - **Z-38** Zadania nie wymagają pamiętania więcej niż 2–4 elementów; kody do bram są widoczne na ekranie, nie do zapamiętania.
   Wyjątek: gra pamięciowa „pary” na poziomach 4–5 (6 i 8 par) świadomie przekracza ten limit — poziom wybiera rodzic (Z-39), nie ma kar ani liczników, znalezione pary zostają odkryte, a bezczynność podpowiada znaną parę.
   Wyjątek: gra „imie” na poziomach 4–5 chowa wzór całego imienia — to własne imię dziecka, wzór wraca po pierwszym błędzie, a poziom wybiera rodzic (Z-39).
-- **Z-39** Poziom nie jest przypisany do wieku — rodzic może wybrać dowolny.
+- **Z-39** Poziom nie jest przypisany do wieku — rodzic może wybrać dowolny. Wiek dziecka wybrany w panelu rodzica dobiera tylko gry pokazywane w hubie; poziomu w grze nie przypisuje.
 
 ## Lista kontrolna recenzji gry
 

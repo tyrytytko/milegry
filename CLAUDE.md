@@ -1,7 +1,7 @@
 # Miłe Gry — instrukcja dla agenta
 
-Spokojne gry przeglądarkowe dla dzieci w wieku 3–5 lat (Vite + TypeScript, statyczny build,
-interfejs po polsku). Repo rozwijają **rodzice**, którzy uczą się pracy z agentem: mów prosto,
+Spokojne gry przeglądarkowe dla dzieci w wieku 3–7 lat (Vite + TypeScript, statyczny build,
+interfejs po polsku); domyślny przedział wieku to 3–5 lat. Repo rozwijają **rodzice**, którzy uczą się pracy z agentem: mów prosto,
 tłumacz pojęcia przy pierwszym użyciu, fakty sprawdzaj sam w repo, decyzje o grze i dziecku
 zostawiaj rodzicowi.
 

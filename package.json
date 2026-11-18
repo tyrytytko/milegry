@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Miłe Gry — spokojne gry przeglądarkowe dla dzieci 3–5 lat",
+  "description": "Miłe Gry — spokojne gry przeglądarkowe dla dzieci 3–7 lat",
   "engines": {
     "node": ">=22.12.0"
   },

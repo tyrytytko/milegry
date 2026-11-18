@@ -1,6 +1,7 @@
 # Miłe Gry
 
-Spokojne gry przeglądarkowe dla dzieci w wieku 3–5 lat: litery, liczby, kształty, logika, pamięć.
+Spokojne gry przeglądarkowe dla dzieci w wieku 3–7 lat: litery, liczby, kształty, logika, pamięć.
+Domyślny przedział wieku to 3–5 lat; przedział 5–7 lat rodzic wybiera w panelu „Dla rodziców”.
 Działają w przeglądarce na komputerze (klawiatura) i na tablecie lub telefonie (dotyk), po polsku.
 Projekt rozwijają rodzice razem z agentem AI (Claude Code).
 
