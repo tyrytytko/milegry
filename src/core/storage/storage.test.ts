@@ -228,6 +228,18 @@ describe('settings', () => {
     expect(load({ effectsVolume: 0.6 }).effectsVolume).toBe(0.6);
   });
 
+  it('wiek dziecka: brak pola i wartość spoza listy dają „3–5”, zapisane „5–7” wraca jako „5–7”', () => {
+    const store = createStore(createMemoryStorage());
+    store.set('settings', { tempo: 'medium' });
+    expect(loadSettings(store).ageGroup).toBe('3-5');
+    for (const junk of ['7-9', '5–7', 5, null, ['5-7']]) {
+      store.set('settings', { ageGroup: junk });
+      expect(loadSettings(store).ageGroup).toBe('3-5');
+    }
+    saveSettings(store, { ...DEFAULT_SETTINGS, ageGroup: '5-7' });
+    expect(loadSettings(store).ageGroup).toBe('5-7');
+  });
+
   it('zapis z głośnością 0 to wyciszenie i głośność domyślna', () => {
     const store = createStore(createMemoryStorage());
     store.set('settings', { ...DEFAULT_SETTINGS, muted: false, effectsVolume: 0, tempo: 'medium' });

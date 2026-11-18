@@ -12,7 +12,8 @@ export const manifest: GameManifest = {
   area: 'ksztalty',
   // Tryby sterowania, które gra obsługuje; runRound daje oba (strzałki + Spacja oraz stuknięcie).
   input: ['keyboard', 'touch'],
-  // Przedział wieku [od, do] w latach — informacja dla rodzica, nie blokada (Z-39).
+  // Przedział wieku [od, do] w latach; `od` dobiera kafelek w hubie do wieku wybranego przez rodzica
+  // (GameManifest.age w core/types.ts). To nie blokada (Z-39).
   age: [3, 5],
   // PODMIEŃ: inline SVG kafelka w hubie (np. art.chick() z core/art).
   icon: tileIcon(),

@@ -53,6 +53,21 @@ function renderPanel(container: HTMLElement, app: App): void {
   const s = app.settings;
   const set = (patch: Partial<Settings>) => app.updateSettings(patch);
 
+  // --- Wiek dziecka (dobiera kafelki w hubie; poziomu nie wybiera — Z-39) ---
+  const age = section(
+    'Wiek dziecka',
+    hint('Wiek dobiera gry na ekranie głównym; poziom w każdej grze nadal wybiera rodzic.'),
+    choiceGroup<Settings['ageGroup']>(
+      'Wiek dziecka',
+      [
+        { value: '3-5', label: '3–\u20605\u00a0lat' },
+        { value: '5-7', label: '5–\u20607\u00a0lat' },
+      ],
+      s.ageGroup,
+      (v) => set({ ageGroup: v }),
+    ),
+  );
+
   // --- Dźwięk ---
   const sound = section(
     'Dźwięk',
@@ -257,6 +272,7 @@ function renderPanel(container: HTMLElement, app: App): void {
         app.store.persistent
           ? null
           : hint('Ta przeglądarka nie pozwala zapisywać danych. Ustawienia i postęp znikną po zamknięciu karty.'),
+        age,
         sound,
         tempo,
         control,
@@ -273,7 +289,7 @@ function renderPanel(container: HTMLElement, app: App): void {
         section(
           'O Miłych Grach',
           hint(
-            'Spokojne gry dla dzieci w wieku 3–\u20605\u00a0lat. Bez reklam, zakupów, liczników czasu i przegranej. ' +
+            'Spokojne gry dla dzieci w wieku 3–\u20607\u00a0lat. Bez reklam, zakupów, liczników czasu i przegranej. ' +
               'Ustawienia i postęp zapisują się tylko w tej przeglądarce; nic nie jest wysyłane do internetu.',
           ),
           hint('Kroje pisma: Andika (SIL International) i Playwrite PL (TypeTogether), licencja SIL Open Font License 1.1 — teksty licencji w katalogu „licencje” na serwerze.'),

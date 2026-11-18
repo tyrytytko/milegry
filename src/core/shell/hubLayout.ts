@@ -1,5 +1,6 @@
 /**
- * Układ huba: jedna siatka wszystkich gier na jednym ekranie (bez DOM, testowane w hubLayout.test.ts).
+ * Układ huba: jedna siatka gier widocznych w wybranym wieku na jednym ekranie (bez DOM, testowane
+ * w hubLayout.test.ts).
  * Widok (hub.ts) przekazuje wynik do CSS przez zmienne `--mg-hub-*`, więc wymiary są tylko tutaj.
  */
 
@@ -108,4 +109,12 @@ export function computeHubLayout(count: number, width: number, height: number, s
     titles,
     fits,
   };
+}
+
+/**
+ * Indeks kafelka, od którego startuje ramka klawiatury: ostatnio grana gra, a gdy jej nie ma wśród
+ * widocznych kafelków (ukryta przez wiek, brak zapisu) — pierwszy kafelek.
+ */
+export function hubStartIndex(visibleIds: readonly string[], lastGame: string): number {
+  return Math.max(0, visibleIds.indexOf(lastGame));
 }

@@ -29,7 +29,7 @@ Playwrite PL (litery pisane). Wersje: `package.json`.
 
 ```
 types.ts      kontrakt gra ↔ rdzeń
-registry.ts   odkrywanie gier (import.meta.glob), walidacja manifestu, AREAS, RESERVED_IDS
+registry.ts   odkrywanie gier (import.meta.glob), walidacja manifestu, AREAS, RESERVED_IDS, widoczność wg wieku
 router.ts     adresy / , /<id>/ , /rodzice/ (History API, z adresem bazowym)
 clock.ts      zegar gry: pauza i skala tempa
 round/        warstwa rundy: runRound, createCoach, createCodeEntry (+ czyste coachCore, queue, codeBuffer)
@@ -67,10 +67,17 @@ jak gra), `scripts/` (`postbuild`, `nowa-gra`, `sprawdz-gre`), `.claude/` (skill
 
 ## Hub
 
-- Jedna siatka wszystkich gier bez nagłówków obszarów: obszarami w kolejności `AREAS`, w obszarze według
-  `order`. Kafelek to obrazek z manifestu na tle w kolorze obszaru i tytuł; tytuł, nazwa obszaru, opis
+- Jedna siatka gier widocznych w wieku dziecka bez nagłówków obszarów: obszarami w kolejności `AREAS`,
+  w obszarze według `order`. Kafelek to obrazek z manifestu na tle w kolorze obszaru i tytuł; tytuł, nazwa obszaru, opis
   i dopisek o trybie sterowania są w etykiecie dla czytników ekranu. Gra niedostępna w bieżącym trybie ma
   przygaszony obrazek z dopiskiem („z klawiaturą” / „na dotyk”) na obrazku, więc widać go także bez tytułu.
+- **Wiek dziecka.** Rodzic wybiera w panelu przedział `ageGroup` („3–5”, domyślny, albo „5–7”). Hub pokazuje
+  grę, gdy dolna granica `age` z jej manifestu nie przekracza górnej granicy przedziału — czysta funkcja
+  `isVisibleForAge` / `visibleGames` w `registry.ts`, testowana bez DOM. Gry od 3 lat widać więc w obu
+  przedziałach, gry od 6 lat tylko w „5–7”; nowa gra dla starszych nie wymaga zmian w hubie. Ukrytej gry
+  po prostu nie ma (nie jest przygaszona), ale wiek tylko dobiera kafelki: pod swoim adresem każda gra
+  otwiera się zawsze, a poziom dalej wybiera rodzic (Z-39). Siatka i start ramki klawiatury (ostatnio
+  grana gra, a gdy ukryta — pierwszy kafelek; `hubStartIndex`) liczą się z gier widocznych.
 - Kafelek gry działającej w bieżącym trybie „wciska się” od dotknięcia do puszczenia (`shell/pressFeedback.ts`
   daje klasę `mg-pressed`, bo samo `:active` na dotyku bywa zawodne); zsunięcie palca puszcza. Wygląd
   i czasy z tokenów są w `hub.css`; przy „ogranicz ruch” bez przesunięcia (Z-05). Przygaszony kafelek się
@@ -88,7 +95,7 @@ jak gra), `scripts/` (`postbuild`, `nowa-gra`, `sprawdz-gre`), `.claude/` (skill
   daje większe kafelki. Kolumny i bok kafelka liczy czysta funkcja `shell/hubLayout.ts` z rozmiaru okna
   (tam też wszystkie wymiary i odstępy); `hub.ts` podaje wynik do CSS w zmiennych `--mg-hub-*` i liczy go
   od nowa przy zmianie rozmiaru. Do 12 gier siatka mieści się bez przewijania od 375 × 667 w pionie
-  i 667 × 375 w poziomie; na mniejszym ekranie kafelek zostaje przy 80 px (Z-33), a hub się przewija.
+  i 667 × 375 w poziomie (licząc gry widoczne w wybranym wieku); na mniejszym ekranie kafelek zostaje przy 80 px (Z-33), a hub się przewija.
   Funkcja dostaje też bezpieczne marginesy (niżej), więc na telefonie z wycięciem liczy kafelek z miejsca,
   które naprawdę zostaje.
 

@@ -1,9 +1,11 @@
-import type { SessionLimit, Settings } from '../types';
+import type { AgeGroup, SessionLimit, Settings } from '../types';
 import type { Store } from './storage';
 
 export const SETTINGS_KEY = 'settings';
 
 export const SESSION_LIMITS: readonly SessionLimit[] = [0, 10, 15, 20, 30];
+
+export const AGE_GROUPS: readonly AgeGroup[] = ['3-5', '5-7'];
 
 export const DEFAULT_SETTINGS: Settings = {
   muted: false,
@@ -14,6 +16,7 @@ export const DEFAULT_SETTINGS: Settings = {
   letterCase: 'upper',
   childName: '',
   sessionLimit: 15, // Z-25
+  ageGroup: '3-5',
 };
 
 const oneOf = <T>(value: unknown, allowed: readonly T[], fallback: T): T =>
@@ -51,6 +54,7 @@ export function loadSettings(store: Store): Settings {
     letterCase: oneOf(raw.letterCase, ['upper', 'lower'] as const, d.letterCase),
     childName: sanitizeChildName(raw.childName),
     sessionLimit: oneOf(raw.sessionLimit, SESSION_LIMITS, d.sessionLimit),
+    ageGroup: oneOf(raw.ageGroup, AGE_GROUPS, d.ageGroup),
   };
 }
 

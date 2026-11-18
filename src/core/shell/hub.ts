@@ -1,13 +1,13 @@
 import type { GameManifest, InputMode } from '../types';
 import { hedgehog } from '../art';
-import { AREAS, games } from '../registry';
+import { AREAS, games, visibleGames } from '../registry';
 import { buildPath, type Route } from '../router';
 import { createFocusGrid } from '../ui/focusGrid';
 import { icons } from '../ui/icons';
 import { h } from '../util/dom';
 import type { App } from './app';
 import { createHoldButton } from './holdButton';
-import { computeHubLayout, type SafeInsets } from './hubLayout';
+import { computeHubLayout, hubStartIndex, type SafeInsets } from './hubLayout';
 import { addPressFeedback } from './pressFeedback';
 
 const LAST_GAME_KEY = 'hub:lastGame';
@@ -96,12 +96,14 @@ export function renderHub(container: HTMLElement, app: App): () => void {
   const brand = h('div', { class: 'mg-hub__brand' }, [logo, h('h1', { class: 'mg-hub__title' }, 'Miłe Gry')]);
   header.append(brand, parentsBtn.el);
 
-  // Jedna siatka: obszarami w kolejności z rejestru, w obszarze według `order` (rejestr już sortuje).
+  // Jedna siatka gier widocznych w wieku wybranym przez rodzica: obszarami w kolejności z rejestru,
+  // w obszarze według `order` (rejestr już sortuje). Ukryta gra nadal otwiera się pod swoim adresem.
+  const shown = visibleGames(games, app.settings.ageGroup);
   const main = h('main', { class: 'mg-hub__main' });
   const grid = h('div', { class: 'mg-hub__grid' });
   const tiles: HTMLAnchorElement[] = [];
   for (const area of AREAS) {
-    for (const manifest of games.filter((g) => g.area === area.id)) {
+    for (const manifest of shown.filter((g) => g.area === area.id)) {
       const t = tile(app, manifest, area.title);
       tiles.push(t);
       grid.append(t);
@@ -119,9 +121,9 @@ export function renderHub(container: HTMLElement, app: App): () => void {
   window.addEventListener('resize', onResize);
 
   // Klawiatura: strzałki po kafelkach i do „Dla rodziców” (wg położenia na ekranie: z górnego rzędu
-  // w górę), Enter otwiera grę albo bramkę. Startujemy od ostatnio granej.
+  // w górę), Enter otwiera grę albo bramkę. Start: ostatnio grana, a gdy ukryta — pierwszy kafelek.
   const lastGame = app.store.get<string>(LAST_GAME_KEY, '');
-  const initial = Math.max(0, tiles.findIndex((t) => t.dataset.game === lastGame));
+  const initial = hubStartIndex(tiles.map((t) => t.dataset.game ?? ''), lastGame);
   const focusGrid = createFocusGrid({
     items: [...tiles, parentsBtn.el],
     initial,

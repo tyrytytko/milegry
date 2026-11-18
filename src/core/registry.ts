@@ -1,4 +1,4 @@
-import type { Area, GameManifest, GameModule } from './types';
+import type { AgeGroup, Area, GameManifest, GameModule } from './types';
 import { PARENTS_SEGMENT } from './router';
 
 /**
@@ -126,6 +126,22 @@ function collectGames(): GameManifest[] {
 
 /** Poprawne gry, posortowane po `order`. */
 export const games: readonly GameManifest[] = collectGames();
+
+/** Górna granica (w latach) przedziału wieku wybieranego w panelu rodzica. */
+const AGE_GROUP_MAX: Record<AgeGroup, number> = { '3-5': 5, '5-7': 7 };
+
+/**
+ * Czy hub pokazuje kafelek gry dziecku w danym przedziale wieku: dolna granica wieku z manifestu
+ * nie przekracza górnej granicy przedziału. Dotyczy tylko huba — pod swoim adresem gra otwiera się zawsze.
+ */
+export function isVisibleForAge(manifest: Pick<GameManifest, 'age'>, ageGroup: AgeGroup): boolean {
+  return manifest.age[0] <= AGE_GROUP_MAX[ageGroup];
+}
+
+/** Gry widoczne w hubie dla danego przedziału wieku, w kolejności listy. */
+export function visibleGames<T extends Pick<GameManifest, 'age'>>(list: readonly T[], ageGroup: AgeGroup): T[] {
+  return list.filter((g) => isVisibleForAge(g, ageGroup));
+}
 
 export function findGame(id: string): GameManifest | undefined {
   return games.find((g) => g.id === id);

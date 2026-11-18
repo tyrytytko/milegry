@@ -1,7 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import type { Direction } from '../types';
 import { nearestInDirection } from '../ui/focusGrid';
-import { HUB_LAYOUT, NO_INSETS, computeHubLayout, type SafeInsets } from './hubLayout';
+import { HUB_LAYOUT, NO_INSETS, computeHubLayout, hubStartIndex, type SafeInsets } from './hubLayout';
+
+describe('hubStartIndex — start ramki klawiatury', () => {
+  it('startuje od ostatnio granej gry', () => {
+    expect(hubStartIndex(['a', 'b', 'c'], 'b')).toBe(1);
+  });
+
+  it('gdy ostatnio grana gra jest ukryta (albo brak zapisu) — od pierwszego kafelka', () => {
+    expect(hubStartIndex(['a', 'c'], 'b')).toBe(0);
+    expect(hubStartIndex(['a', 'c'], '')).toBe(0);
+  });
+});
 
 type Layout = ReturnType<typeof computeHubLayout>;
 

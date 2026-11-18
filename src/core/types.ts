@@ -33,7 +33,10 @@ export interface GameManifest {
   area: Area;
   /** Wspierane tryby sterowania (co najmniej jeden). */
   input: InputMode[];
-  /** Przedział wieku [od, do] w latach (informacja, nie blokada — Z-39). */
+  /**
+   * Przedział wieku [od, do] w latach. Dolna granica `od` decyduje, w których przedziałach wieku
+   * rodzica hub pokazuje kafelek gry (reguła: AgeGroup). To nie blokada — Z-39.
+   */
   age: [number, number];
   /** Inline SVG kafelka w hubie (np. wynik funkcji z core/art). */
   icon: string;
@@ -86,6 +89,14 @@ export type LetterRole = 'main' | 'companion';
 /** Limit sesji w minutach (0 = wyłączony). */
 export type SessionLimit = 0 | 10 | 15 | 20 | 30;
 
+/**
+ * Przedział wieku dziecka wybrany przez rodzica (lata, „3–5” albo „5–7”). Dobiera tylko kafelki
+ * w hubie: gra jest widoczna, gdy dolna granica `GameManifest.age` nie przekracza górnej granicy
+ * przedziału (`isVisibleForAge` w registry.ts). Nie blokuje wejścia do gry pod jej adresem
+ * i nie wybiera poziomu (Z-39).
+ */
+export type AgeGroup = '3-5' | '5-7';
+
 export interface Settings {
   /** Globalne wyciszenie efektów. */
   muted: boolean;
@@ -99,6 +110,8 @@ export interface Settings {
   /** Imię dziecka (opcjonalne, tylko w tej przeglądarce). '' = brak. */
   childName: string;
   sessionLimit: SessionLimit;
+  /** Wiek dziecka — decyduje, które gry hub pokazuje (AgeGroup). Domyślnie '3-5'. */
+  ageGroup: AgeGroup;
 }
 
 // ---------------------------------------------------------------------------
